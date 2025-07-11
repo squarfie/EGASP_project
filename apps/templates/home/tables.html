@@ -61,7 +61,7 @@
           <!-- Light table -->
           <div class="table-responsive">
             <table class="table align-items-center table-flush" style="border-collapse: collapse; margin: 0%; padding: 0%;">
-              <thead class="thead-light">
+              <thead class="thead-light" style="text-align: center;">
                 <tr>
                   <th scope="col"> EDIT</th>
                   
@@ -109,9 +109,13 @@
                             {% if antibiotic_entry.ab_MIC_value %}
                                 <strong>{{ antibiotic_entry.ab_Antibiotic }}</strong>  
                                 (MIC: <strong>&nbsp; {{antibiotic_entry.ab_MIC_operand}} {{ antibiotic_entry.ab_MIC_value }}</strong> 
-                                <strong>{{ antibiotic_entry.ab_MIC_RIS }}</strong>)
+                                <strong>{{ antibiotic_entry.ab_MIC_RIS }}</strong>)&nbsp;
+                                {% if antibiotic_entry.ab_AlertMIC %}
+                                 <strong style="color: red;">Alert:</strong>&nbsp; {{ antibiotic_entry.ab_Alert_val }}
+                                {% endif %}
                                 <br>
                             {% endif %}
+                           
                             {% empty %}
                             No Antibiotic Data
                              {% endfor %}
@@ -125,9 +129,13 @@
                             {% if retest_entry.ab_Retest_MICValue %}
                                 <strong>{{ retest_entry.ab_Retest_Antibiotic}}</strong>  
                                 (Retest MIC: <strong>&nbsp; {{retest_entry.ab_Retest_MIC_operand}} {{ retest_entry.ab_Retest_MICValue }}</strong> 
-                                <strong>{{retest_entry.ab_Retest_MIC_RIS }}</strong>)
+                                <strong>{{retest_entry.ab_Retest_MIC_RIS }}</strong>)&nbsp;
+                                {% if retest_entry.ab_Retest_AlertMIC %}
+                                <strong style="color: red;">Alert:</strong> &nbsp; {{retest_entry.ab_Retest_Alert_val}}
+                                {% endif %}
                                 <br>
                             {% endif %}
+                            
                             {% empty %}
                             No Retest Done
                             {% endfor %}
@@ -135,10 +143,9 @@
                   </td>
                   
                   <td>
-                    <a href="{%url 'generate_pdf' isolate.id %}" class="text-info"> <i class="fa fa-print" aria-hidden="true"></i> Lab Result </a><span style="display: block; line-height: 8px;"><br></span>
-                    <a href="{% url 'generate_gs' isolate.id %}"  class="text-info"> <i class="fa fa-heartbeat"></i> Gram Stain
+                    <a href="{%url 'generate_pdf' isolate.id %}" class="text-info" target="_blank"> <i class="fa fa-print" aria-hidden="true"></i> Lab Result </a><span style="display: block; line-height: 8px;"><br></span>
+                    <a href="{% url 'generate_gs' isolate.id %}"  class="text-info" target="_blank"> <i class="fa fa-heartbeat"></i> Gram Stain
                     </a>
-                  
                   </td>
                 </tr>
                 {% endfor %}

@@ -12,8 +12,6 @@ urlpatterns = [
 
     # The home page
     path('', views.index, name='home'),
-    #the forms
-    path('add/', views.egasp_data,name='egasp_data'),
     path('crf/', views.crf_data,name='crf_data'),
     path('show/', views.show_data,name='show_data'),
     path('edit/<int:id>/',views.edit_data,name='edit_data'),
@@ -48,6 +46,8 @@ urlpatterns = [
     path('delete_cities/', views.delete_cities, name='delete_cities'),
     path('delete_city/<int:id>/', views.delete_city, name='delete_city'),
     path('download_combined_table/', views.download_combined_table, name='download_combined_table'),
+    path('get-cities/', views.get_cities_by_province, name='get_cities_by_province'),
+    
 
    
      

@@ -31,10 +31,10 @@
                 <a href="{% url 'edit_data' item.id %}" class="btn btn-sm btn-outline-primary w-100" style="padding: 5px; margin-bottom: 2px;">
                   <i class="fas fa-edit"></i> Edit
                 </a>
-                <a href="{% url 'generate_pdf' item.id %}" class="btn btn-sm btn-outline-warning w-100" style="padding: 5px; margin-bottom: 2px;">
+                <a href="{% url 'generate_pdf' item.id %}" class="btn btn-sm btn-outline-warning w-100" style="padding: 5px; margin-bottom: 2px;" target="_blank">
                   <i class="fas fa-print"></i> Lab Result 
                 </a>
-                <a href="{% url 'generate_gs' item.id %}" class="btn btn-sm btn-outline-info w-100" style="padding: 5px;">
+                <a href="{% url 'generate_gs' item.id %}" class="btn btn-sm btn-outline-info w-100" style="padding: 5px;" target="_blank">
                   <i class="fas fa-print"></i> Gram Stain
                 </a>
               </td>

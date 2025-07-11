@@ -1,5 +1,6 @@
 
 <style>
+
   #age{
  display: block;
  margin: 10px;
@@ -14,15 +15,47 @@
  word-spacing: 2.7px;
  color: navy;
 }
+
+/* Sidebar collapsed */
+#sidenav-main.collapsed {
+  width: 80px;
+  transition: width 0.3s ease;
+}
+
+#sidenav-main.collapsed .nav-link-text {
+  display: none;
+}
+
+#sidenav-main.collapsed .navbar-brand-img {
+  width: 40px;
+  height: auto;
+}
+
+#sidenav-main.collapsed .nav-item {
+  text-align: center;
+}
+
+#sidenav-main.collapsed #utilities-heading {
+  display: none;
+}
+
+
+
 </style>
 <nav class="sidenav navbar navbar-vertical  fixed-left  navbar-expand-xs navbar-light bg-white" id="sidenav-main">
   <div class="scrollbar-inner">
     <!-- Brand -->
-    <div class="sidenav-header  align-items-center">
+     <div style="text-align: left;">
+        <button class="sidenav-toggler" id="toggle-sidenav" style="background: none; border: none; margin: 9px;">
+      <i class="ni ni-align-left-2 text-primary"></i>
+        </button>
+    </div>
+   <div class="sidenav-header align-items-center">
       <a class="navbar-brand" href="/">
-        <img src="/static/assets/img/brand/arsp.png" class="navbar-brand-img" alt="ARSP">
+        <img src="/static/assets/img/brand/egasp_n.png" class="navbar-brand-img" alt="Egasp" style="height: 100%; width: auto;">
       </a>
     </div>
+      
     <div class="navbar-inner">
       <!-- Collapse -->
       <div class="collapse navbar-collapse" id="sidenav-collapse-main">
@@ -76,7 +109,7 @@
         <!-- Divider -->
         <hr class="my-3">
         <!-- Heading -->
-        <h6 class="navbar-heading p-0 text-muted">
+        <h6 class="navbar-heading p-0 text-muted" id="utilities-heading">
           <span class="docs-normal">Utilities</span>
         </h6>
         <!-- Navigation -->
@@ -92,7 +125,7 @@
             </a>
 
           </li>
-          <!-- Modal -->
+          <!-- Modal for age-->
            <div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="ageModalLabel" aria-hidden="true" >
             <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
               <div class="modal-content">
@@ -166,7 +199,6 @@
               </div>
             </div>
           </div>
-          <!-- end of modal -->
           <li class="nav-item">
             <a class="nav-link" 
                href="{% url 'download_combined_table' %}">
@@ -216,7 +248,7 @@
                target="_blank" 
                href="https://arsp.com.ph/">
               <i class="ni ni-send text-dark"></i>
-              <span class="nav-link-text">ARSP-DMU</span>
+              <span class="nav-link-text">ARSP website</span>
             </a>
           </li>
         </ul>
@@ -289,5 +321,27 @@
       document.getElementById('age2').innerHTML = '';
   }
   </script>
+<!-- toggle -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const toggleBtn = document.getElementById('toggle-sidenav');
+    const sidenav = document.getElementById('sidenav-main');
+
+    toggleBtn.addEventListener('click', function () {
+      sidenav.classList.toggle('collapsed');
+
+      // Optional: save collapsed state in localStorage
+      const isCollapsed = sidenav.classList.contains('collapsed');
+      localStorage.setItem('sidenav-collapsed', isCollapsed);
+    });
+
+    // Optional: restore state on reload
+    if (localStorage.getItem('sidenav-collapsed') === 'true') {
+      sidenav.classList.add('collapsed');
+    }
+  });
+</script>
+
+
 </nav>
 
