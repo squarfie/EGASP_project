@@ -19,7 +19,7 @@ class egasp_Form(forms.ModelForm):
              queryset=Clinic_Staff_Details.objects.all(),
              to_field_name='ClinStaff_Name',
              widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-             empty_label="Select Lab Staff",
+             empty_label=None,
              required=False,
         )
 
@@ -35,7 +35,7 @@ class egasp_Form(forms.ModelForm):
         Current_City = forms.ModelChoiceField(
             queryset=City.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label="Select City",
+            empty_label=None,
             required=False,
             
         )
@@ -43,14 +43,14 @@ class egasp_Form(forms.ModelForm):
         Current_Province = forms.ModelChoiceField(
             queryset=Province.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label="Select Province",
+            empty_label=None,
             required=False,
             
         )
         Permanent_City = forms.ModelChoiceField(
             queryset=City.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label="Select City",
+            empty_label=None,
             required=False,
             
         )
@@ -58,7 +58,7 @@ class egasp_Form(forms.ModelForm):
         Permanent_Province = forms.ModelChoiceField(
             queryset=Province.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label="Select Province",
+            empty_label=None,
             required=False,
             
         )

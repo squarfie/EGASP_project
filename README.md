@@ -83,11 +83,13 @@ Running the Django Development Server:
 To start the server on the default port (8000), run:
 
 python manage.py runserver
+
 To allow access from other devices on your local network (LAN), use:
 python manage.py runserver 0.0.0.0:(your preferred port number)
 
 example:
 python manage.py runserver 0.0.0.0:8090
+
 then access the database using any browser by typing:
 http://127.0.0.1:8090
 
@@ -96,6 +98,7 @@ Or, to bind the server to your machine’s local IP address with a custom port:
 python manage.py runserver 192.168.1.243:8090
 
 🔹 Replace 192.168.1.243 with your actual local IP address in settings.py "ALLOWED HOSTS"
+
 🔹 Use only for development/testing. Avoid exposing this in production environments.
 
 

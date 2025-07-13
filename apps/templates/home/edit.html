@@ -1841,31 +1841,70 @@ label.form-control-label{
 <!-- for province and cities -->
 <script>
   $(document).ready(function () {
-    $('#id_Current_Province').change(function () {
-      var provinceId = $(this).val();
-      var citySelect = $('#id_Current_City');
+    const citySelect = $('#id_Current_City');
+    const provinceSelect = $('#id_Current_Province');
+    const initialProvince = provinceSelect.val();
+    const initialCity = citySelect.val();
 
-      citySelect.empty();  // Clear the current options
+    // Only bind the AJAX logic when the user changes the province manually
+    provinceSelect.on('change', function () {
+      const selectedProvinceId = $(this).val();
 
-      if (provinceId) {
+      if (selectedProvinceId) {
         $.ajax({
           url: "{% url 'get_cities_by_province' %}",
-          data: {
-            'province_id': provinceId
-          },
+          data: { 'province_id': selectedProvinceId },
           success: function (data) {
+            citySelect.empty();
             citySelect.append($('<option>').text('---------').attr('value', ''));
+
             $.each(data.cities, function (index, city) {
-              citySelect.append($('<option>').text(city.cityname).attr('value', city.id));
+              const option = $('<option>')
+                .text(city.cityname)
+                .attr('value', city.id);
+
+              // If this is the original province and city, pre-select
+              if (selectedProvinceId == initialProvince && city.id == initialCity) {
+                option.attr('selected', 'selected');
+              }
+
+              citySelect.append(option);
             });
           }
         });
       } else {
+        citySelect.empty();
         citySelect.append($('<option>').text('---------').attr('value', ''));
       }
     });
+
+    // ✅ Optional: If you're loading the edit form and want the city options to appear based on the selected province
+    // This ensures the dropdown is filled ON PAGE LOAD (for edit view)
+    if (initialProvince) {
+      $.ajax({
+        url: "{% url 'get_cities_by_province' %}",
+        data: { 'province_id': initialProvince },
+        success: function (data) {
+          citySelect.empty();
+          citySelect.append($('<option>').text('---------').attr('value', ''));
+
+          $.each(data.cities, function (index, city) {
+            const option = $('<option>')
+              .text(city.cityname)
+              .attr('value', city.id);
+
+            if (city.id == initialCity) {
+              option.attr('selected', 'selected');
+            }
+
+            citySelect.append(option);
+          });
+        }
+      });
+    }
   });
 </script>
+
 
 {% endblock javascripts %}
 
