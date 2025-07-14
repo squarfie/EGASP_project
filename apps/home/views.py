@@ -994,6 +994,18 @@ def get_cities_by_province(request):
     return JsonResponse({'cities': list(cities)})
 
 
+# def get_cities_by_province(request):
+#     province_id = request.GET.get('province_id')
+
+#     if not province_id or not province_id.isdigit():
+#         return JsonResponse({'cities': []})
+
+#     cities = City.objects.filter(province_id=int(province_id)).order_by('cityname')
+#     city_list = [{'id': city.id, 'cityname': city.cityname} for city in cities]
+
+#     return JsonResponse({'cities': city_list})
+
+
 @login_required(login_url="/login/")
 def view_locations(request):
     # Fetch all provinces, sorted by province name

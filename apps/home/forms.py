@@ -35,22 +35,27 @@ class egasp_Form(forms.ModelForm):
         Current_City = forms.ModelChoiceField(
             queryset=City.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label=None,
+            empty_label="None",
+            to_field_name='cityname',
             required=False,
             
         )
 
+        
         Current_Province = forms.ModelChoiceField(
             queryset=Province.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label=None,
+            empty_label="None",
+            to_field_name='provincename',
             required=False,
             
         )
+
         Permanent_City = forms.ModelChoiceField(
             queryset=City.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label=None,
+            empty_label="None",
+            to_field_name='cityname',
             required=False,
             
         )
@@ -58,7 +63,8 @@ class egasp_Form(forms.ModelForm):
         Permanent_Province = forms.ModelChoiceField(
             queryset=Province.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label=None,
+            empty_label="None",
+            to_field_name='provincename',
             required=False,
             
         )
@@ -277,9 +283,19 @@ class egasp_Form(forms.ModelForm):
             self.fields['TRng'].required=False
             self.fields['For_possible_WGS'].required=False
             self.fields['Laboratory_Staff'].required=False
-            
 
-                 
+
+
+             # Populate cities on edit mode (instance exists and has provinces set)
+            # if self.instance and self.instance.Current_Province:
+            #     self.fields['Current_City'].queryset = City.objects.filter(
+            #         province=self.instance.Current_Province
+            #     )
+
+            # if self.instance and self.instance.Permanent_Province:
+            #     self.fields['Permanent_City'].queryset = City.objects.filter(
+            #         province=self.instance.Permanent_Province
+            # )
 
 def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)

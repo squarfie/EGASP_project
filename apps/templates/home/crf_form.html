@@ -1219,8 +1219,7 @@ label.form-control-label{
                                   <th scope="col" >ANTIBIOTIC</th>
                                   <th scope="col" >TEST METHOD</th>
                                   <th scope="col" >WHONET CODE</th>
-                                  <th scope="col" >Operand</th>
-                                  <th scope="col" style="text-align: center; width: 98px;">TEST RESULT</th>
+                                  <th scope="col" style="text-align: center; width: 98px;">Operand|Result</th>
                                   <th scope="col" style="text-align: center; width: 98px;">Alert MIC</th>
                                   <th scope="col" style="text-align: center; width: 98px;">Threshold</th>
                                 </tr>
@@ -1235,13 +1234,17 @@ label.form-control-label{
                                   {% if entry.Disk_Abx %}
                                   <td>Disk</td>
                                   <td scope="row" style="border-spacing: 0; border-collapse: collapse;">{{ entry.Whonet_Abx }}</td>
-                                  <td></td>
-                                  <td style="border-spacing: 0; border-collapse: collapse;"><input name="disk_{{entry.id}}" value="{{ab_Disk_value |default:'' }}" type="number" style="width: 50px;" min="0" tabindex="{{ tab }}" /></td>
+                                  <td style="border-spacing: 0; border-collapse: collapse;"><input name="disk_{{entry.id}}" value="{{ab_Disk_value |default:'' }}" type="number" style="width: 60px; display: block;  float: right;" min="0" tabindex="{{ tab }}" /></td>
                                   {% else %}
                                   <td>MIC</td>
                                   <td scope="row" style="border-spacing: 0; border-collapse: collapse;">{{ entry.Whonet_Abx }}</td>
-                                  <td style="border-spacing: 0; border-collapse: collapse;"><input name="mic_operand_{{entry.id}}" type="text" value="{{ab_MIC_operand|default:'' }}"style="width: 50px;" tabindex="{{ tab }}"/></td>
-                                  <td style="border-spacing: 0; border-collapse: collapse;"><input name="mic_{{entry.id}}" value="{{ab_MIC_value|default:'' }}" type="number" style="width: 50px;" min="0" step="0.001" tabindex="{{ tab|add:1 }}"/></td>
+                                  <td style="border-spacing: 0; border-collapse: collapse;">
+                                  <input name="mic_operand_{{ entry.id }}" type="text" value="{{ ab_MIC_operand|default:'' }}" style="width: 30px; display: inline-block;" tabindex="{{ tab }}" />
+                                  <input name="mic_{{ entry.id }}" type="number" value="{{ ab_MIC_value|default:'' }}" min="0" step="0.001" style="width: 60px; float: right; " tabindex="{{ tab|add:1 }}" />
+                                </td>
+
+                                  <!-- <td style="border-spacing: 0; border-collapse: collapse;"><input name="mic_operand_{{entry.id}}" type="text" value="{{ab_MIC_operand|default:'' }}"style="width: 50px;" tabindex="{{ tab }}"/></td>
+                                  <td style="border-spacing: 0; border-collapse: collapse;"><input name="mic_{{entry.id}}" value="{{ab_MIC_value|default:'' }}" type="number" style="width: 50px;" min="0" step="0.001" tabindex="{{ tab|add:1 }}"/></td> -->
                                   <td style="border-spacing: 0; border-collapse: collapse;"><input type="checkbox" style="width: auto; transform: scale(1.5);" name="alert_mic_{{ entry.id }}" value="{{ab_AlertMIC}}" tabindex="{{ tab|add:1 }}">
                                   </input></td>
                                   <td><u>></u> {{entry.Alert_cln}}</td>
@@ -1286,8 +1289,7 @@ label.form-control-label{
                                 <th scope="col" >ANTIBIOTIC</th>
                                 <th scope="col">Test Method</th>
                                 <th scope="col" >WHONET CODE</th>
-                                <th scope="col" >Operand</th>
-                                <th scope="col">Retest Result</th>
+                                <th scope="col">Operand|Result</th>
                                 <th scope="col" style="text-align: center; width: 98px;">Alert MIC</th>
                                 <th scope="col" style="text-align: center; width: 98px;">Threshold</th>
                               </tr>
@@ -1301,13 +1303,14 @@ label.form-control-label{
                                   {% if retest.Disk_Abx %}
                                   <td>Disk</td>
                                   <td scope="row" style="border-spacing: 0; border-collapse: collapse;">{{ retest.Whonet_Abx }}</td>
-                                  <td></td>
-                                  <td style="border-spacing: 0; border-collapse: collapse; width: 70px;"><input name="retest_disk_{{retest.id}}" value="{{retest.ab_Retest_DiskValue |default:'' }}" type="number" style="width: 50px;" min="0" tabindex="{{ tab }}"/></td>
+                                  <td style="border-spacing: 0; border-collapse: collapse; width: 70px;"><input name="retest_disk_{{retest.id}}" value="{{retest.ab_Retest_DiskValue |default:'' }}" type="number" style="width: 60px; display: block;  float: right;" min="0" tabindex="{{ tab }}"/></td>
                                   {% else %}
                                   <td>MIC</td>
                                   <td scope="row" style="border-spacing: 0; border-collapse: collapse;">{{ retest.Whonet_Abx }}</td>
-                                  <td style="border-spacing: 0; border-collapse: collapse;"><input name="retest_mic_operand_{{retest.id}}" value="{{retest.ab_Retest_MIC_operand_|default:'' }}" type="text" style="width: 50px;" tabindex="{{ tab }}"/></td>
-                                  <td style="border-spacing: 0; border-collapse: collapse; width: 70px;"><input name="retest_mic_{{retest.id}}" value="{{retest.ab_Retest_MICValue|default:'' }}" type="number" style="width: 50px;" min="0" step="0.001" tabindex="{{ tab|add:1 }}"/></td>
+                                  <td style="border-spacing: 0; border-collapse: collapse;">
+                                  <input name="retest_mic_operand_{{retest.id}}" value="{{retest.ab_Retest_MIC_operand_|default:'' }}" type="text" style="width: 30px;" tabindex="{{ tab }}"/>
+                                  <input name="retest_mic_{{retest.id}}" value="{{retest.ab_Retest_MICValue|default:'' }}" type="number" style="width: 60px; float: right;" min="0" step="0.001" tabindex="{{ tab|add:1 }}"/></td>
+
                                   <td style="border-spacing: 0; border-collapse: collapse;"><input type="checkbox" style="width: auto; transform: scale(1.5);" name="retest_alert_mic_{{ retest.id }}" value="{{ab_Retest_AlertMIC}}" tabindex="{{ tab|add:1 }}">
                                   </input>&nbsp;</td>
                                   <td><u>></u> {{retest.Alert_cln}}</td>
@@ -1756,7 +1759,7 @@ label.form-control-label{
 
 
 <!-- for province and cities -->
-<script>
+<!-- <script>
   $(document).ready(function () {
     $('#id_Current_Province').change(function () {
       var provinceId = $(this).val();
@@ -1782,7 +1785,7 @@ label.form-control-label{
       }
     });
   });
-</script>
+</script> -->
 
 
 {% endblock javascripts %}

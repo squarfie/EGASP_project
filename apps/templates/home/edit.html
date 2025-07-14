@@ -1211,8 +1211,7 @@ label.form-control-label{
                                   <th scope="col" style="width: 90px">ANTIBIOTIC</th>
                                   <th scope="col" style="width: 90px">WHONET CODE</th>
                                   <th scope="col" style="text-align: end; width: 98px;">TEST METHOD</th>
-                                  <th scope="col" style="text-align: end; width: 98px;">Operand</th>
-                                  <th scope="col" style="text-align: end; width: 98px;">RESULT</th>
+                                  <th scope="col" style="text-align: end; width: 98px;">Operand|Result</th>
                                   <th scope="col" style="text-align: end; width: 98px;">Alert MIC</th>
                                   <th scope="col" style="text-align: center; width: 98px;">Threshold</th>
                                 </tr>
@@ -1228,20 +1227,19 @@ label.form-control-label{
                             
                                         {% if entry.Disk_Abx %}
                                             <td>DISK</td>
-                                            <td></td>
-                                            <td>
+                                            <td style="border-spacing: 0; border-collapse: collapse;">
                                                 <input name="disk_{{ entry.id }}" 
                                                        value="{% get_existing_value existing_entries entry.id 'disk' %}" 
-                                                       type="number" min="0" style="width: 70px;" tabindex="{{ tab }}"/>
+                                                       type="number" min="0" style="width: 60px; float: right;" tabindex="{{ tab }}"/>
                                             </td>
                                             <td></td>
                                         {% else %}
                                             <td>MIC</td>
-                                            <td><input type="text" style="width: 50px;" name="mic_operand_{{ entry.id }}" value="{% get_existing_value existing_entries entry.id 'mic_operand' %}" tabindex="{{ tab }}"></td> 
-                                            <td>
-                                                <input name="mic_{{ entry.id }}" 
+                                            <td style="border-spacing: 0; border-collapse: collapse;">
+                                              <input type="text" style="width: 30px;" name="mic_operand_{{ entry.id }}" value="{% get_existing_value existing_entries entry.id 'mic_operand' %}" tabindex="{{ tab }}">
+                                              <input name="mic_{{ entry.id }}" 
                                                        value="{% get_existing_value existing_entries entry.id 'mic' %}" 
-                                                       type="number" min="0" step="0.001" style="width: 70px;" tabindex="{{ tab|add:1 }}"/>
+                                                       type="number" min="0" step="0.001" style="width: 60px; float: right;" tabindex="{{ tab|add:1 }}"/>
                                             </td>
                                             <td>
                                               {% get_existing_value existing_entries entry.id 'alert_mic' as alert_mic_checked %}
@@ -1292,8 +1290,7 @@ label.form-control-label{
                                 <th scope="col" style="width: 90px">ANTIBIOTIC</th>
                                 <th scope="col" style="width: 90px">WHONET CODE</th>
                                 <th scope="col" style="text-align: end; width: 98px;">TEST METHOD</th>
-                                <th scope="col" style="text-align: end; width: 98px;">Operand</th>
-                                <th scope="col" style="text-align: end; width: 98px;">RESULT</th>
+                                <th scope="col" style="text-align: end; width: 98px;">Operand|Result</th>
                                 <th scope="col" style="text-align: end; width: 98px;">Alert MIC</th>
                                 <th scope="col" style="text-align: center; width: 98px;">Threshold</th>
                               </tr>
@@ -1309,21 +1306,20 @@ label.form-control-label{
                           
                                       {% if retest.Disk_Abx %}
                                           <td>DISK</td>
-                                          <td></td>
-                                          <td>
+                                          <td style="border-spacing: 0; border-collapse: collapse;">
                                               <input type="number" name="retest_disk_{{ retest.id }}" 
                                                      value="{% get_existing_value retest_entries retest.id 'retest_disk' %}" 
-                                                     style="width: 70px;" min="0" tabindex="{{ tab }}"/>
+                                                     style="width: 60px; float: right;" min="0" tabindex="{{ tab }}"/>
                                           </td>
                                           <td></td>
                                       {% else %}
                                           <td>MIC</td>
                                           
-                                         <td><input type="text" style="width: 50px;"  name="retest_mic_operand_{{retest.id}}"  value="{% get_existing_value retest_entries retest.id 'retest_mic_operand' %}" tabindex="{{ tab }}"> </td>
-                                          <td>
-                                              <input type="number" name="retest_mic_{{ retest.id }}" 
+                                         <td style="border-spacing: 0; border-collapse: collapse;">
+                                          <input type="text" style="width: 30px;"  name="retest_mic_operand_{{retest.id}}"  value="{% get_existing_value retest_entries retest.id 'retest_mic_operand' %}" tabindex="{{ tab }}"> 
+                                          <input type="number" name="retest_mic_{{ retest.id }}" 
                                                      value="{% get_existing_value retest_entries retest.id 'retest_mic' %}" 
-                                                     style="width: 70px;" min="0" step="0.001" tabindex="{{ tab|add:1 }}"/>
+                                                     style="width: 60px; float: right;" min="0" step="0.001" tabindex="{{ tab|add:1 }}"/>
                                           </td>
                                           <td>
                                             {% get_existing_value retest_entries retest.id 'retest_alert_mic' as retest_alert_mic_checked %}
@@ -1838,72 +1834,62 @@ label.form-control-label{
 
 </script>
 
-<!-- for province and cities -->
-<script>
+
+<!-- <script>
   $(document).ready(function () {
-    const citySelect = $('#id_Current_City');
     const provinceSelect = $('#id_Current_Province');
-    const initialProvince = provinceSelect.val();
-    const initialCity = citySelect.val();
+    const citySelect = $('#id_Current_City');
+    const permanentProvince = $('#id_Permanent_Province');
+    const permanentCity = $('#id_Permanent_City');
 
-    // Only bind the AJAX logic when the user changes the province manually
-    provinceSelect.on('change', function () {
-      const selectedProvinceId = $(this).val();
+    // Function to load cities based on selected province
+    function loadCities(provinceId, cityField, selectedCityId = null) {
+      if (!provinceId) return;
 
-      if (selectedProvinceId) {
-        $.ajax({
-          url: "{% url 'get_cities_by_province' %}",
-          data: { 'province_id': selectedProvinceId },
-          success: function (data) {
-            citySelect.empty();
-            citySelect.append($('<option>').text('---------').attr('value', ''));
-
-            $.each(data.cities, function (index, city) {
-              const option = $('<option>')
-                .text(city.cityname)
-                .attr('value', city.id);
-
-              // If this is the original province and city, pre-select
-              if (selectedProvinceId == initialProvince && city.id == initialCity) {
-                option.attr('selected', 'selected');
-              }
-
-              citySelect.append(option);
-            });
-          }
-        });
-      } else {
-        citySelect.empty();
-        citySelect.append($('<option>').text('---------').attr('value', ''));
-      }
-    });
-
-    // ✅ Optional: If you're loading the edit form and want the city options to appear based on the selected province
-    // This ensures the dropdown is filled ON PAGE LOAD (for edit view)
-    if (initialProvince) {
       $.ajax({
-        url: "{% url 'get_cities_by_province' %}",
-        data: { 'province_id': initialProvince },
+        url: "{% url 'get_cities_by_province' %}",  // Django URL that returns cities JSON
+        data: { 'province_id': provinceId },
         success: function (data) {
-          citySelect.empty();
-          citySelect.append($('<option>').text('---------').attr('value', ''));
+          cityField.empty();  // Clear city options
 
           $.each(data.cities, function (index, city) {
-            const option = $('<option>')
-              .text(city.cityname)
-              .attr('value', city.id);
-
-            if (city.id == initialCity) {
-              option.attr('selected', 'selected');
+            const option = $('<option>').val(city.id).text(city.cityname);
+            // Preselect if this city matches the selectedCityId
+            if (String(city.id) === String(selectedCityId)) {
+              option.prop('selected', true);
             }
-
-            citySelect.append(option);
+            cityField.append(option);
           });
         }
       });
     }
+
+    // --- Province change events ---
+    provinceSelect.change(function () {
+      const provId = $(this).val();
+      loadCities(provId, citySelect);  // No selectedCityId = reset
+    });
+
+    permanentProvince.change(function () {
+      const provId = $(this).val();
+      loadCities(provId, permanentCity);
+    });
+
+    // --- Initial load for edit mode ---
+    const initProvinceId = provinceSelect.val();
+    const initCityId = citySelect.val();
+    if (initProvinceId && initCityId) {
+      loadCities(initProvinceId, citySelect, initCityId);
+    }
+
+    const initPermProv = permanentProvince.val();
+    const initPermCity = permanentCity.val();
+    if (initPermProv && initPermCity) {
+      loadCities(initPermProv, permanentCity, initPermCity);
+    }
   });
-</script>
+</script> -->
+
 
 
 {% endblock javascripts %}

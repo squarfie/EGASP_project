@@ -17,8 +17,8 @@ class City(models.Model):
     cityname = models.CharField(max_length=100)
     province = models.ForeignKey(Province, on_delete=models.CASCADE, related_name="cities")
 
+
     def __str__(self):
-        # return f"{self.cityname} ({self.province.provincename})"
         return f"{self.cityname}"
 
 # Model for Province File Upload
@@ -295,7 +295,6 @@ class Egasp_Data(models.Model):
     Nationality_Other = models.CharField(max_length=100,blank=True,default="n/a")
     Travel_History = models.CharField(max_length=100,choices=TravelHistory_Choice, default="")
     Travel_History_Specify= models.CharField(max_length=100,blank=True, default="n/a")
-
 
     ## BEHAVIORAL DATA
     Client_Group = models.CharField(max_length=100,choices=Client_Risk_Choice, default="")
