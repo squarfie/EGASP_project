@@ -1173,12 +1173,17 @@ label.form-control-label{
                   <div class="col-lg-12">
                     <h6 class="heading-small text-muted mb-4">ORGANISM IDENTIFICATION</h6>
                     <div class="row">
-                      <div class="col-lg-6">
+                      <div class="col-lg-4">
                         <div class="form-group">
                           <label class='form-control-label' for='Species_Identification'>Species Identification</label> {{form.Species_Identification| append_attr:"class: form-control"|append_attr:"tabindex:131" }}
                         </div>
                       </div>
-                      <div class="col-lg-6">
+                      <div class="col-lg-4">
+                          <div class="form-group">
+                            <label class='form-control-label' for='Beta_Lactamase'>Beta Lactamase</label> {{form.Beta_Lactamase| append_attr:"class: form-control"|append_attr:"tabindex:300"}}
+                          </div>
+                        </div>
+                      <div class="col-lg-4">
                         <div class="form-group">
                           <label class='form-control-label' for='Other_species_ID'>Other species ID</label> {{form.Other_species_ID| append_attr:"class: form-control" |append_attr:"tabindex:132"}}
                         </div>
@@ -1336,16 +1341,11 @@ label.form-control-label{
                       <div class="row">
                         <div class="col-lg-12">
                         <div class="row">
-                        <div class="col-lg-4">
-                          <div class="form-group">
-                            <label class='form-control-label' for='Beta_Lactamase'>Beta Lactamase</label> {{form.Beta_Lactamase| append_attr:"class: form-control"|append_attr:"tabindex:300"}}
-                          </div>
-                        </div>
-                        <div class="col-lg-4">
+                        <div class="col-lg-6">
                           <div class="form-group">
                           <label class='form-control-label' for='PPng'>PPng</label> {{form.PPng| append_attr:"class: form-control"|append_attr:"tabindex:301"}}
                         </div> </div>
-                        <div class="col-lg-4">
+                        <div class="col-lg-6">
                           <div class="form-group">
                           <label class='form-control-label' for='TRng'>TRng</label> {{form.TRng| append_attr:"class: form-control"|append_attr:"tabindex:302"}}
                         </div></div>
@@ -1401,13 +1401,15 @@ label.form-control-label{
               <div class="col-lg-12">
                 <h6 class="heading-small mb-0" style="padding-bottom: 0; margin-bottom: 0;">LABORATORY PERSONNEL PROVIDING INFORMATION</h6>
               <hr class="border border-primary border-3 opacity-75 " style="margin-top: 0; padding-top: 0%;">
+    
                 <div class="card border-info mb-3">
                   <div class="card-body  text-info">
                     <div class="col-lg-12">
                       <div class="row">
-                        <div class="col-lg-4">
+                        
+                        <div class="col-lg-3">
                           <div class="form-group">                    
-                            <label class='form-control-label' for='Laboratory_Staff'>Laboratory Staff</label>
+                            <label class='form-control-label' for='Laboratory_Staff'>Performed by</label>
                             <div class="d-flex align-items-center">
                               {{ form.Laboratory_Staff| append_attr:"class: form-control "|append_attr:"tabindex:309"}} 
                               <span><a href="{% url 'add_contact' %}" class="col-4 shortcut-item" style="padding: 0;">
@@ -1416,32 +1418,62 @@ label.form-control-label{
                               </div>
                           </div>
                         </div>
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
                             <div class="form-group">
-                              <label class='form-control-label' for='Date_Accomplished_ARSP'>Date_Accomplished</label> {{form.Date_Accomplished_ARSP| append_attr:"class: form-control"|append_attr:"tabindex:310"}}
+                              <label class='form-control-label' for='Date_Accomplished_ARSP'>Date Accomplished</label> {{form.Date_Accomplished_ARSP| append_attr:"class: form-control"|append_attr:"tabindex:310"}}
                             </div>
                         </div>
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
                             <div class="form-group">
-                              <label class='form-control-label' for='ars_contact'>Contact Number</label> {{ form.ars_contact| append_attr:"class: form-control"}} 
+                              <label class='form-control-label' for='ars_license'>License No</label> {{ form.ars_license| append_attr:"class: form-control"|append_attr:"tabindex:311"}} 
                           </div>
                          
                         </div>
-                     </div>
-                        <div class="row">
-                          <div class="col-lg-4">
+                           <div class="col-lg-3">
                             <div class="form-group">
-                              <label class='form-control-label' for='ars_email'>Email Address</label> {{form.ars_email| append_attr:"class: form-control"}}
+                              <label class='form-control-label' for='ars_designation'>Designation</label> {{form.ars_designation| append_attr:"class: form-control"|append_attr:"tabindex:312"}}
                               
                             </div>
                           </div>
+                     </div>
+                        <div class="row">
+                          <div class="col-lg-3">
+                          <div class="form-group">                    
+                            <label class='form-control-label' for='Laboratory_Staff'>Validated by</label>
+                            <div class="d-flex align-items-center">
+                              {{ form.Validator_Pers| append_attr:"class: form-control "|append_attr:"tabindex:313"}} 
+                              <span><a href="{% url 'add_contact' %}" class="col-4 shortcut-item" style="padding: 0;">
+                              <span class="ni ni-settings" style="margin-left: 10px; line-height: 0; vertical-align: text-bottom;"></span>
+                              </a></span>
+                              </div>
+                          </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                              <label class='form-control-label' for='Date_Validated_ARSP'>Date Validated</label> {{form.Date_Validated_ARSP| append_attr:"class: form-control"|append_attr:"tabindex:314"}}
+                        </div>
+                        </div>
+                          <div class="col-lg-3">
+                            <div class="form-group">
+                              <label class='form-control-label' for='val_license'>License No</label> {{ form.val_license| append_attr:"class: form-control"|append_attr:"tabindex:315"}} 
+                          </div>
+                        </div>
+                           <div class="col-lg-3">
+                            <div class="form-group">
+                              <label class='form-control-label' for='val_designation'>Designation</label> {{form.val_designation| append_attr:"class: form-control"|append_attr:"tabindex:316"}}
+                              
+                            </div>
+                          </div>
+                    </div> 
+                    <div class="row">
                           <div class="col-lg-8">
                             <div class="form-group">
-                              <label class='form-control-label' for='ars_notes'>Notes</label> {{form.ars_notes| append_attr:"class: form-control"|append_attr:"tabindex:311"}}
+                              <label class='form-control-label' for='ars_notes'>Notes</label> {{form.ars_notes| append_attr:"class: form-control"|append_attr:"tabindex:317"}}
                         </div> 
                       </div> 
-                    </div> 
+                    </div>
                   </div> 
+
                      </div> 
                     </div> 
                 </div>  
@@ -1713,13 +1745,32 @@ label.form-control-label{
           data: { lab_staff_id: labStaffId },
           dataType: 'json',
           success: function (data) {
-            $('#id_ars_contact').val(data.ClinStaff_Telnum);
-            $('#id_ars_email').val(data.ClinStaff_EmailAdd);
+            $('#id_ars_license').val(data.ClinStaff_License);
+            $('#id_ars_designation').val(data.ClinStaff_Designation);
           }
         });
       } else {
-        $('#id_ars_contact').val('');
-        $('#id_ars_email').val('');
+        $('#id_ars_license').val('');
+        $('#id_ars_designation').val('');
+      }
+    });
+
+    // --- Auto fill val_contact and val_email when staff is selected ---
+    $('#id_Validator_Pers').change(function () {
+      const labStaffId = $(this).val();
+      if (labStaffId) {
+        $.ajax({
+          url: "{% url 'get_clinic_staff_details' %}",
+          data: { lab_staff_id: labStaffId },
+          dataType: 'json',
+          success: function (data) {
+            $('#id_val_license').val(data.ClinStaff_License);
+            $('#id_val_designation').val(data.ClinStaff_Designation);
+          }
+        });
+      } else {
+        $('#id_val_license').val('');
+        $('#id_val_designation').val('');
       }
     });
 
@@ -1747,13 +1798,11 @@ label.form-control-label{
     });
 
     // for joining MIC and operand
-   
-
-
-
 
   }); // document ready closing
 </script>
+
+
 
 
 

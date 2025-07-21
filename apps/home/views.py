@@ -108,9 +108,13 @@ def crf_data(request):
             # Save the main form first
             egasp_instance = form.save(commit=False)
             lab_staff = form.cleaned_data.get('Laboratory_Staff')
+            validator = form.cleaned_data.get('Validator_Pers')
             if lab_staff:
-                egasp_instance.ars_contact = lab_staff.ClinStaff_Telnum
-                egasp_instance.ars_email = lab_staff.ClinStaff_EmailAdd
+                egasp_instance.ars_license = lab_staff.ClinStaff_License
+                egasp_instance.ars_designation = lab_staff.ClinStaff_Designation
+            if  validator:
+                egasp_instance.val_license = validator.ClinStaff_License
+                egasp_instance.val_designation = validator.ClinStaff_Designation
             egasp_instance.save()
             
             # Loop through `whonet_abx_data` to save the related antibiotics
@@ -246,11 +250,16 @@ def edit_data(request, id):
 
         form = egasp_Form(request.POST, instance=isolates)
         if form.is_valid():
+            # Save the main form first
             egasp_instance = form.save(commit=False)
             lab_staff = form.cleaned_data.get('Laboratory_Staff')
+            validator = form.cleaned_data.get('Validator_Pers')
             if lab_staff:
-                egasp_instance.ars_contact = lab_staff.ClinStaff_Telnum 
-                egasp_instance.ars_email = lab_staff.ClinStaff_EmailAdd
+                egasp_instance.ars_license = lab_staff.ClinStaff_License
+                egasp_instance.ars_designation = lab_staff.ClinStaff_Designation
+            if  validator:
+                egasp_instance.val_license = validator.ClinStaff_License
+                egasp_instance.val_designation = validator.ClinStaff_Designation
             egasp_instance.save()
 
             # Update or Create Antibiotic Entries (whonet_abx_data)
@@ -892,6 +901,22 @@ def delete_contact(request, id):
     return redirect('contact_view')
 
 
+# Edit an existing contact
+def edit_contact(request, pk):
+    contact = get_object_or_404(Clinic_Staff_Details, pk=pk)
+
+    if request.method == 'POST':
+        form = ContactForm(request.POST, instance=contact)  # Pre-fill with existing data
+        if form.is_valid():
+            form.save()
+            return redirect('contact_view')  # Redirect after saving
+    else:
+        form = ContactForm(instance=contact)  # Load existing data
+    
+    return render(request, 'home/Contact_Edit.html', {'form': form, 'contact': contact})
+
+
+
 @login_required(login_url="/login/")
 def contact_view(request):
     contact_items = Clinic_Staff_Details.objects.all()  # Fetch all contact data
@@ -905,11 +930,15 @@ def get_clinic_staff_details(request):
 
     if lab_staff:
         return JsonResponse({
-            'ClinStaff_Telnum': str(lab_staff.ClinStaff_Telnum),  # Convert PhoneNumber to string
-            'ClinStaff_EmailAdd': lab_staff.ClinStaff_EmailAdd
+            # 'ClinStaff_Telnum': str(lab_staff.ClinStaff_Telnum),  # Convert PhoneNumber to string
+            # 'ClinStaff_EmailAdd': lab_staff.ClinStaff_EmailAdd,
+            'ClinStaff_License': lab_staff.ClinStaff_License,
+            'ClinStaff_Designation': lab_staff.ClinStaff_Designation
         })
     else:
         return JsonResponse({'error': 'Staff not found'}, status=404)
+
+
 
 @login_required(login_url="/login/")
 #for province and city fields
@@ -1030,356 +1059,542 @@ def delete_city(request, id):
     return redirect('view_locations')
 
 
-@login_required(login_url="/login/")
+# @login_required(login_url="/login/")
+# #download combined table
+# def download_combined_table(request):
+#     egasp_data_entries = Egasp_Data.objects.all()
+
+#     # Collect unique antibiotics from both abx and retest
+#     unique_abx_codes = set()
+#     for abx_code, rt_code in AntibioticEntry.objects.values_list('ab_Abx_code', 'ab_Retest_Abx_code').distinct():
+#         if abx_code:
+#             unique_abx_codes.add(abx_code)
+#         if rt_code:
+#             unique_abx_codes.add(rt_code)
+
+#     sorted_antibiotics = sorted(unique_abx_codes)
+
+#     # Pre-check which antibiotics are disk types
+#     disk_abx_lookup = {
+#         abx: BreakpointsTable.objects.filter(Whonet_Abx=abx, Disk_Abx=True).exists()
+#         for abx in sorted_antibiotics
+#     }
+
+#     response = HttpResponse(content_type='text/csv; charset=utf-8')
+#     response['Content-Disposition'] = 'attachment; filename="combined_table.csv"'
+#     response.write('\ufeff')
+#     writer = csv.writer(response)
+
+#     # Static column headers
+#     static_fields = [
+#     'Date_of_Entry', 'ID_Number', 'Egasp_Id', 'PTIDCode', 'Laboratory', 'Clinic', 'Consult_Date',
+#     'Consult_Type', 'Client_Type', 'Uic_Ptid', 'Clinic_Code', 'ClinicCodeGen', 'First_Name', 'Middle_Name',
+#     'Last_Name', 'Suffix', 'Birthdate', 'Age', 'Sex', 'Gender_Identity', 'Gender_Identity_Other',
+#     'Occupation', 'Civil_Status', 'Civil_Status_Other', 'Current_Province', 'Current_City', 'Current_Country',
+#     'PermAdd_same_CurrAdd', 'Permanent_Province', 'Permanent_City', 'Permanent_Country', 'Other_Country',
+#     'Nationality', 'Nationality_Other', 'Travel_History', 'Travel_History_Specify', 'Client_Group',
+#     'Client_Group_Other', 'History_Of_Sex_Partner', 'Nationality_Sex_Partner', 'Date_of_Last_Sex',
+#     'Nationality_Sex_Partner_Other', 'Number_Of_Sex_Partners', 'Relationship_to_Partners', 'SB_Urethral',
+#     'SB_Vaginal', 'SB_Anal_Insertive', 'SB_Oral_Insertive', 'Sharing_of_Sex_Toys', 'SB_Oral_Receptive',
+#     'SB_Anal_Receptive', 'SB_Others', 'Sti_None', 'Sti_Hiv', 'Sti_Hepatitis_B', 'Sti_Hepatitis_C',
+#     'Sti_NGI', 'Sti_Syphilis', 'Sti_Chlamydia', 'Sti_Anogenital_Warts', 'Sti_Genital_Ulcer', 'Sti_Herpes',
+#     'Sti_Other', 'Sti_Trichomoniasis', 'Sti_Mycoplasma_genitalium', 'Sti_Lymphogranuloma', 'Illicit_Drug_Use',
+#     'Illicit_Drug_Specify', 'Abx_Use_Prescribed', 'Abx_Use_Prescribed_Specify', 'Abx_Use_Self_Medicated',
+#     'Abx_Use_Self_Medicated_Specify', 'Abx_Use_None', 'Abx_Use_Other', 'Abx_Use_Other_Specify',
+#     'Route_Oral', 'Route_Injectable_IV', 'Route_Dermal', 'Route_Suppository', 'Route_Other',
+#     'Symp_With_Discharge', 'Symp_No', 'Symp_Discharge_Urethra', 'Symp_Discharge_Vagina',
+#     'Symp_Discharge_Anus', 'Symp_Discharge_Oropharyngeal', 'Symp_Pain_Lower_Abdomen', 'Symp_Tender_Testicles',
+#     'Symp_Painful_Urination', 'Symp_Painful_Intercourse', 'Symp_Rectal_Pain', 'Symp_Other',
+#     'Outcome_Of_Follow_Up_Visit', 'Prev_Test_Pos', 'Prev_Test_Pos_Date', 'Result_Test_Cure_Initial',
+#     'Result_Test_Cure_Followup', 'NoTOC_Other_Test', 'NoTOC_DatePerformed', 'NoTOC_Result_of_Test',
+#     'Patient_Compliance_Antibiotics', 'OtherDrugs_Specify', 'OtherDrugs_Dosage', 'OtherDrugs_Route',
+#     'OtherDrugs_Duration', 'Gonorrhea_Treatment', 'Treatment_Outcome', 'Primary_Antibiotic',
+#     'Primary_Abx_Other', 'Secondary_Antibiotic', 'Secondary_Abx_Other', 'Notes', 'Clinic_Staff',
+#     'Requesting_Physician', 'Telephone_Number', 'Email_Address', 'Date_Accomplished_Clinic',
+#     'Date_Requested_Clinic', 'Date_Specimen_Collection', 'Specimen_Code', 'Specimen_Type',
+#     'Specimen_Quality', 'Date_Of_Gram_Stain', 'Diagnosis_At_This_Visit', 'Gram_Neg_Intracellular',
+#     'Gram_Neg_Extracellular', 'Gs_Presence_Of_Pus_Cells', 'Presence_GN_Intracellular',
+#     'Presence_GN_Extracellular', 'GS_Pus_Cells', 'Epithelial_Cells', 'GS_Date_Released', 'GS_Others',
+#     'GS_Negative', 'Gs_Gram_neg_diplococcus', 'Gs_NoGram_neg_diplococcus', 'Gs_Not_performed',
+#     'Date_Received_in_lab', 'Positive_Culture_Date', 'Culture_Result', 'Growth', 'Growth_span',
+#     'Species_Identification', 'Other_species_ID', 'Specimen_Quality_Cs', 'Susceptibility_Testing_Date',
+#     'Retested_Mic', 'Confirmation_Ast_Date', 'NAAT_ng', 'NAAT_chl', 'Beta_Lactamase', 'PPng', 'TRng',
+#     'Date_Released', 'For_possible_WGS', 'Date_stocked', 'Location', 'abx_code', 'Laboratory_Staff',
+#     'Date_Accomplished_ARSP', 'ars_notes', 'ars_license', 'ars_designation', 'Validator_Pers',
+#     'Date_Validated_ARSP', 'val_license', 'val_designation'
+# ]
+
+#     header = [
+#         'Date_of_Entry', 'ID_Number', 'Egasp_Id', 'PTIDCode', 'Laboratory', 'Clinic', 'Consult_Date',
+#         'Consult_Type', 'Client_Type', 'Uic_Ptid', 'Clinic_Code', 'ClinicCodeGen', 'First_Name', 'Middle_Name',
+#         'Last_Name', 'Suffix', 'Birthdate', 'Age', 'Sex', 'Gender_Identity', 'Gender_Identity_Other',
+#         'Occupation', 'Civil_Status', 'Civil_Status_Other', 'Current_Province', 'Current_City', 'Current_Country',
+#         'PermAdd_same_CurrAdd', 'Permanent_Province', 'Permanent_City', 'Permanent_Country', 'Other_Country',
+#         'Nationality', 'Nationality_Other', 'Travel_History', 'Travel_History_Specify', 'Client_Group',
+#         'Client_Group_Other', 'History_Of_Sex_Partner', 'Nationality_Sex_Partner', 'Date_of_Last_Sex',
+#         'Nationality_Sex_Partner_Other', 'Number_Of_Sex_Partners', 'Relationship_to_Partners', 'SB_Urethral',
+#         'SB_Vaginal', 'SB_Anal_Insertive', 'SB_Oral_Insertive', 'Sharing_of_Sex_Toys', 'SB_Oral_Receptive',
+#         'SB_Anal_Receptive', 'SB_Others', 'Sti_None', 'Sti_Hiv', 'Sti_Hepatitis_B', 'Sti_Hepatitis_C',
+#         'Sti_NGI', 'Sti_Syphilis', 'Sti_Chlamydia', 'Sti_Anogenital_Warts', 'Sti_Genital_Ulcer', 'Sti_Herpes',
+#         'Sti_Other', 'Sti_Trichomoniasis', 'Sti_Mycoplasma_genitalium', 'Sti_Lymphogranuloma', 'Illicit_Drug_Use',
+#         'Illicit_Drug_Specify', 'Abx_Use_Prescribed', 'Abx_Use_Prescribed_Specify', 'Abx_Use_Self_Medicated',
+#         'Abx_Use_Self_Medicated_Specify', 'Abx_Use_None', 'Abx_Use_Other', 'Abx_Use_Other_Specify',
+#         'Route_Oral', 'Route_Injectable_IV', 'Route_Dermal', 'Route_Suppository', 'Route_Other',
+#         'Symp_With_Discharge', 'Symp_No', 'Symp_Discharge_Urethra', 'Symp_Discharge_Vagina',
+#         'Symp_Discharge_Anus', 'Symp_Discharge_Oropharyngeal', 'Symp_Pain_Lower_Abdomen', 'Symp_Tender_Testicles',
+#         'Symp_Painful_Urination', 'Symp_Painful_Intercourse', 'Symp_Rectal_Pain', 'Symp_Other',
+#         'Outcome_Of_Follow_Up_Visit', 'Prev_Test_Pos', 'Prev_Test_Pos_Date', 'Result_Test_Cure_Initial',
+#         'Result_Test_Cure_Followup', 'NoTOC_Other_Test', 'NoTOC_DatePerformed', 'NoTOC_Result_of_Test',
+#         'Patient_Compliance_Antibiotics', 'OtherDrugs_Specify', 'OtherDrugs_Dosage', 'OtherDrugs_Route',
+#         'OtherDrugs_Duration', 'Gonorrhea_Treatment', 'Treatment_Outcome', 'Primary_Antibiotic',
+#         'Primary_Abx_Other', 'Secondary_Antibiotic', 'Secondary_Abx_Other', 'Notes', 'Clinic_Staff',
+#         'Requesting_Physician', 'Telephone_Number', 'Email_Address', 'Date_Accomplished_Clinic',
+#         'Date_Requested_Clinic', 'Date_Specimen_Collection', 'Specimen_Code', 'Specimen_Type',
+#         'Specimen_Quality', 'Date_Of_Gram_Stain', 'Diagnosis_At_This_Visit', 'Gram_Neg_Intracellular',
+#         'Gram_Neg_Extracellular', 'Gs_Presence_Of_Pus_Cells', 'Presence_GN_Intracellular',
+#         'Presence_GN_Extracellular', 'GS_Pus_Cells', 'Epithelial_Cells', 'GS_Date_Released', 'GS_Others',
+#         'GS_Negative', 'Gs_Gram_neg_diplococcus', 'Gs_NoGram_neg_diplococcus', 'Gs_Not_performed',
+#         'Date_Received_in_lab', 'Positive_Culture_Date', 'Culture_Result', 'Growth', 'Growth_span',
+#         'Species_Identification', 'Other_species_ID', 'Specimen_Quality_Cs', 'Susceptibility_Testing_Date',
+#         'Retested_Mic', 'Confirmation_Ast_Date', 'NAAT_ng', 'NAAT_chl', 'Beta_Lactamase', 'PPng', 'TRng',
+#         'Date_Released', 'For_possible_WGS', 'Date_stocked', 'Location', 'abx_code', 'Laboratory_Staff',
+#         'Date_Accomplished_ARSP', 'ars_notes', 'ars_license', 'ars_designation', 'Validator_Pers',
+#         'Date_Validated_ARSP', 'val_license', 'val_designation'
+#     ]
+
+#     for abx in sorted_antibiotics:
+#         if not disk_abx_lookup[abx]:
+#             header.append(f'{abx}_Op')
+#         header.append(f'{abx}_Val')
+#         header.append(f'{abx}_RIS')
+#         if not disk_abx_lookup[abx]:
+#             header.append(f'{abx}_RT_Op')
+#         header.append(f'{abx}_RT_Val')
+#         header.append(f'{abx}_RT_RIS')
+
+#     writer.writerow(header)
+
+#     for egasp in egasp_data_entries:
+#         row = [getattr(egasp, field, '') for field in static_fields]
+
+
+#         # Collect antibiotic results
+#         abx_entries = AntibioticEntry.objects.filter(ab_idNumber_egasp=egasp)
+#         abx_data = {}
+
+#         for ab in abx_entries:
+#             # Initial
+#             if ab.ab_Abx_code:
+#                 code = ab.ab_Abx_code
+#                 if code not in abx_data:
+#                     abx_data[code] = {}
+#                 abx_data[code].update({
+#                     '_Val': ab.ab_Disk_value or ab.ab_MIC_value,
+#                     '_RIS': ab.ab_Disk_RIS or ab.ab_MIC_RIS,
+#                     '_Op': ab.ab_MIC_operand or '',
+#                 })
+
+#             # Retest
+#             if ab.ab_Retest_Abx_code:
+#                 code = ab.ab_Retest_Abx_code
+#                 if code not in abx_data:
+#                     abx_data[code] = {}
+#                 abx_data[code].update({
+#                     'RT_Val': ab.ab_Retest_DiskValue or ab.ab_Retest_MICValue,
+#                     'RT_RIS': ab.ab_Retest_Disk_RIS or ab.ab_Retest_MIC_RIS,
+#                     'RT_Op': ab.ab_Retest_MIC_operand or '',
+#                 })
+
+#         # Add antibiotic data to row
+#         for abx in sorted_antibiotics:
+#             is_disk = disk_abx_lookup[abx]
+#             data = abx_data.get(abx, {})
+#             if not is_disk:
+#                 row.append(data.get('_Op', ''))
+#             val = data.get('_Val', '')
+#             if isinstance(val, (int, float)):
+#                 val = format(val, '.3f')
+#             row.append(val)
+#             row.append(data.get('_RIS', ''))
+#             if not is_disk:
+#                 row.append(data.get('RT_Op', ''))
+#             rt_val = data.get('RT_Val', '')
+#             if isinstance(rt_val, (int, float)):
+#                 rt_val = format(rt_val, '.3f')
+#             row.append(rt_val)
+#             row.append(data.get('RT_RIS', ''))
+
+#         writer.writerow(row)
+
+#     return response
+
+
+
+#for uploading data in tables egasp and antibiotics entries
+# def upload_combined_table(request):
+#     if request.method == 'POST':
+#         upload_form = UploadDataForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             uploaded_file = request.FILES['data_upload']
+#             csv_file = TextIOWrapper(uploaded_file.file, encoding='utf-8')
+#             reader = csv.DictReader(csv_file)
+
+
+#             for row in reader:
+#                 egasp_id = row.get('Egasp_Id')
+#                 if not egasp_id:
+#                     continue  # Skip row without Egasp_Id
+                
+#                 # Create or update the Egasp_Data record
+#                 egasp_obj, created = Egasp_Data.objects.get_or_create(
+#                     Egasp_Id=egasp_id,
+#                     defaults={
+#                         'Date_of_Entry': row.get('Date_of_Entry', ' '),
+#                         'ID_Number': row.get('ID_Number', ' '),
+#                         'Egasp_Id': row.get('Egasp_Id', ' '),
+#                         'PTIDCode': row.get('PTIDCode', ' '),
+#                         'Laboratory': row.get('Laboratory', ' '),
+#                         'Clinic': row.get('Clinic', ' '),
+#                         'Consult_Date': row.get('Consult_Date', ' '),
+#                         'Consult_Type': row.get('Consult_Type', ' '),
+#                         'Client_Type': row.get('Client_Type', ' '),
+#                         'Uic_Ptid': row.get('Uic_Ptid', ' '),
+#                         'Clinic_Code': row.get('Clinic_Code', ' '),
+#                         'ClinicCodeGen': row.get('ClinicCodeGen', ' '),
+#                         'First_Name': row.get('First_Name', ' '),
+#                         'Middle_Name': row.get('Middle_Name', ' '),
+#                         'Last_Name': row.get('Last_Name', ' '),
+#                         'Suffix': row.get('Suffix', ' '),
+#                         'Birthdate': row.get('Birthdate', ' '),
+#                         'Age': row.get('Age', ' '),
+#                         'Sex': row.get('Sex', ' '),
+#                         'Gender_Identity': row.get('Gender_Identity', ' '),
+#                         'Gender_Identity_Other': row.get('Gender_Identity_Other', ' '),
+#                         'Occupation': row.get('Occupation', ' '),
+#                         'Civil_Status': row.get('Civil_Status', ' '),
+#                         'Civil_Status_Other': row.get('Civil_Status_Other', ' '),
+#                         'Current_Province': row.get('Current_Province', ' '),
+#                         'Current_City': row.get('Current_City', ' '),
+#                         'Current_Country': row.get('Current_Country', ' '),
+#                         'PermAdd_same_CurrAdd': row.get('PermAdd_same_CurrAdd', ' '),
+#                         'Permanent_Province': row.get('Permanent_Province', ' '),
+#                         'Permanent_City': row.get('Permanent_City', ' '),
+#                         'Permanent_Country': row.get('Permanent_Country', ' '),
+#                         'Other_Country': row.get('Other_Country', ' '),
+#                         'Nationality': row.get('Nationality', ' '),
+#                         'Nationality_Other': row.get('Nationality_Other', ' '),
+#                         'Travel_History': row.get('Travel_History', ' '),
+#                         'Travel_History_Specify': row.get('Travel_History_Specify', ' '),
+#                         'Client_Group': row.get('Client_Group', ' '),
+#                         'Client_Group_Other': row.get('Client_Group_Other', ' '),
+#                         'History_Of_Sex_Partner': row.get('History_Of_Sex_Partner', ' '),
+#                         'Nationality_Sex_Partner': row.get('Nationality_Sex_Partner', ' '),
+#                         'Date_of_Last_Sex': row.get('Date_of_Last_Sex', ' '),
+#                         'Nationality_Sex_Partner_Other': row.get('Nationality_Sex_Partner_Other', ' '),
+#                         'Number_Of_Sex_Partners': row.get('Number_Of_Sex_Partners', ' '),
+#                         'Relationship_to_Partners': row.get('Relationship_to_Partners', ' '),
+#                         'SB_Urethral': row.get('SB_Urethral', ' '),
+#                         'SB_Vaginal': row.get('SB_Vaginal', ' '),
+#                         'SB_Anal_Insertive': row.get('SB_Anal_Insertive', ' '),
+#                         'SB_Oral_Insertive': row.get('SB_Oral_Insertive', ' '),
+#                         'Sharing_of_Sex_Toys': row.get('Sharing_of_Sex_Toys', ' '),
+#                         'SB_Oral_Receptive': row.get('SB_Oral_Receptive', ' '),
+#                         'SB_Anal_Receptive': row.get('SB_Anal_Receptive', ' '),
+#                         'SB_Others': row.get('SB_Others', ' '),
+#                         'Sti_None': row.get('Sti_None', ' '),
+#                         'Sti_Hiv': row.get('Sti_Hiv', ' '),
+#                         'Sti_Hepatitis_B': row.get('Sti_Hepatitis_B', ' '),
+#                         'Sti_Hepatitis_C': row.get('Sti_Hepatitis_C', ' '),
+#                         'Sti_NGI': row.get('Sti_NGI', ' '),
+#                         'Sti_Syphilis': row.get('Sti_Syphilis', ' '),
+#                         'Sti_Chlamydia': row.get('Sti_Chlamydia', ' '),
+#                         'Sti_Anogenital_Warts': row.get('Sti_Anogenital_Warts', ' '),
+#                         'Sti_Genital_Ulcer': row.get('Sti_Genital_Ulcer', ' '),
+#                         'Sti_Herpes': row.get('Sti_Herpes', ' '),
+#                         'Sti_Other': row.get('Sti_Other', ' '),
+#                         'Sti_Trichomoniasis': row.get('Sti_Trichomoniasis', ' '),
+#                         'Sti_Mycoplasma_genitalium': row.get('Sti_Mycoplasma_genitalium', ' '),
+#                         'Sti_Lymphogranuloma': row.get('Sti_Lymphogranuloma', ' '),
+#                         'Illicit_Drug_Use': row.get('Illicit_Drug_Use', ' '),
+#                         'Illicit_Drug_Specify': row.get('Illicit_Drug_Specify', ' '),
+#                         'Abx_Use_Prescribed': row.get('Abx_Use_Prescribed', ' '),
+#                         'Abx_Use_Prescribed_Specify': row.get('Abx_Use_Prescribed_Specify', ' '),
+#                         'Abx_Use_Self_Medicated': row.get('Abx_Use_Self_Medicated', ' '),
+#                         'Abx_Use_Self_Medicated_Specify': row.get('Abx_Use_Self_Medicated_Specify', ' '),
+#                         'Abx_Use_None': row.get('Abx_Use_None', ' '),
+#                         'Abx_Use_Other': row.get('Abx_Use_Other', ' '),
+#                         'Abx_Use_Other_Specify': row.get('Abx_Use_Other_Specify', ' '),
+#                         'Route_Oral': row.get('Route_Oral', ' '),
+#                         'Route_Injectable_IV': row.get('Route_Injectable_IV', ' '),
+#                         'Route_Dermal': row.get('Route_Dermal', ' '),
+#                         'Route_Suppository': row.get('Route_Suppository', ' '),
+#                         'Route_Other': row.get('Route_Other', ' '),
+#                         'Symp_With_Discharge': row.get('Symp_With_Discharge', ' '),
+#                         'Symp_No': row.get('Symp_No', ' '),
+#                         'Symp_Discharge_Urethra': row.get('Symp_Discharge_Urethra', ' '),
+#                         'Symp_Discharge_Vagina': row.get('Symp_Discharge_Vagina', ' '),
+#                         'Symp_Discharge_Anus': row.get('Symp_Discharge_Anus', ' '),
+#                         'Symp_Discharge_Oropharyngeal': row.get('Symp_Discharge_Oropharyngeal', ' '),
+#                         'Symp_Pain_Lower_Abdomen': row.get('Symp_Pain_Lower_Abdomen', ' '),
+#                         'Symp_Tender_Testicles': row.get('Symp_Tender_Testicles', ' '),
+#                         'Symp_Painful_Urination': row.get('Symp_Painful_Urination', ' '),
+#                         'Symp_Painful_Intercourse': row.get('Symp_Painful_Intercourse', ' '),
+#                         'Symp_Rectal_Pain': row.get('Symp_Rectal_Pain', ' '),
+#                         'Symp_Other': row.get('Symp_Other', ' '),
+#                         'Outcome_Of_Follow_Up_Visit': row.get('Outcome_Of_Follow_Up_Visit', ' '),
+#                         'Prev_Test_Pos': row.get('Prev_Test_Pos', ' '),
+#                         'Prev_Test_Pos_Date': row.get('Prev_Test_Pos_Date', ' '),
+#                         'Result_Test_Cure_Initial': row.get('Result_Test_Cure_Initial', ' '),
+#                         'Result_Test_Cure_Followup': row.get('Result_Test_Cure_Followup', ' '),
+#                         'NoTOC_Other_Test': row.get('NoTOC_Other_Test', ' '),
+#                         'NoTOC_DatePerformed': row.get('NoTOC_DatePerformed', ' '),
+#                         'NoTOC_Result_of_Test': row.get('NoTOC_Result_of_Test', ' '),
+#                         'Patient_Compliance_Antibiotics': row.get('Patient_Compliance_Antibiotics', ' '),
+#                         'OtherDrugs_Specify': row.get('OtherDrugs_Specify', ' '),
+#                         'OtherDrugs_Dosage': row.get('OtherDrugs_Dosage', ' '),
+#                         'OtherDrugs_Route': row.get('OtherDrugs_Route', ' '),
+#                         'OtherDrugs_Duration': row.get('OtherDrugs_Duration', ' '),
+#                         'Gonorrhea_Treatment': row.get('Gonorrhea_Treatment', ' '),
+#                         'Treatment_Outcome': row.get('Treatment_Outcome', ' '),
+#                         'Primary_Antibiotic': row.get('Primary_Antibiotic', ' '),
+#                         'Primary_Abx_Other': row.get('Primary_Abx_Other', ' '),
+#                         'Secondary_Antibiotic': row.get('Secondary_Antibiotic', ' '),
+#                         'Secondary_Abx_Other': row.get('Secondary_Abx_Other', ' '),
+#                         'Notes': row.get('Notes', ' '),
+#                         'Clinic_Staff': row.get('Clinic_Staff', ' '),
+#                         'Requesting_Physician': row.get('Requesting_Physician', ' '),
+#                         'Telephone_Number': row.get('Telephone_Number', ' '),
+#                         'Email_Address': row.get('Email_Address', ' '),
+#                         'Date_Accomplished_Clinic': row.get('Date_Accomplished_Clinic', ' '),
+#                         'Date_Requested_Clinic': row.get('Date_Requested_Clinic', ' '),
+#                         'Date_Specimen_Collection': row.get('Date_Specimen_Collection', ' '),
+#                         'Specimen_Code': row.get('Specimen_Code', ' '),
+#                         'Specimen_Type': row.get('Specimen_Type', ' '),
+#                         'Specimen_Quality': row.get('Specimen_Quality', ' '),
+#                         'Date_Of_Gram_Stain': row.get('Date_Of_Gram_Stain', ' '),
+#                         'Diagnosis_At_This_Visit': row.get('Diagnosis_At_This_Visit', ' '),
+#                         'Gram_Neg_Intracellular': row.get('Gram_Neg_Intracellular', ' '),
+#                         'Gram_Neg_Extracellular': row.get('Gram_Neg_Extracellular', ' '),
+#                         'Gs_Presence_Of_Pus_Cells': row.get('Gs_Presence_Of_Pus_Cells', ' '),
+#                         'Presence_GN_Intracellular': row.get('Presence_GN_Intracellular', ' '),
+#                         'Presence_GN_Extracellular': row.get('Presence_GN_Extracellular', ' '),
+#                         'GS_Pus_Cells': row.get('GS_Pus_Cells', ' '),
+#                         'Epithelial_Cells': row.get('Epithelial_Cells', ' '),
+#                         'GS_Date_Released': row.get('GS_Date_Released', ' '),
+#                         'GS_Others': row.get('GS_Others', ' '),
+#                         'GS_Negative': row.get('GS_Negative', ' '),
+#                         'Gs_Gram_neg_diplococcus': row.get('Gs_Gram_neg_diplococcus', ' '),
+#                         'Gs_NoGram_neg_diplococcus': row.get('Gs_NoGram_neg_diplococcus', ' '),
+#                         'Gs_Not_performed': row.get('Gs_Not_performed', ' '),
+#                         'Date_Received_in_lab': row.get('Date_Received_in_lab', ' '),
+#                         'Positive_Culture_Date': row.get('Positive_Culture_Date', ' '),
+#                         'Culture_Result': row.get('Culture_Result', ' '),
+#                         'Growth': row.get('Growth', ' '),
+#                         'Growth_span': row.get('Growth_span', ' '),
+#                         'Species_Identification': row.get('Species_Identification', ' '),
+#                         'Other_species_ID': row.get('Other_species_ID', ' '),
+#                         'Specimen_Quality_Cs': row.get('Specimen_Quality_Cs', ' '),
+#                         'Susceptibility_Testing_Date': row.get('Susceptibility_Testing_Date', ' '),
+#                         'Retested_Mic': row.get('Retested_Mic', ' '),
+#                         'Confirmation_Ast_Date': row.get('Confirmation_Ast_Date', ' '),
+#                         'NAAT_ng': row.get('NAAT_ng', ' '),
+#                         'NAAT_chl': row.get('NAAT_chl', ' '),
+#                         'Beta_Lactamase': row.get('Beta_Lactamase', ' '),
+#                         'PPng': row.get('PPng', ' '),
+#                         'TRng': row.get('TRng', ' '),
+#                         'Date_Released': row.get('Date_Released', ' '),
+#                         'For_possible_WGS': row.get('For_possible_WGS', ' '),
+#                         'Date_stocked': row.get('Date_stocked', ' '),
+#                         'Location': row.get('Location', ' '),
+#                         'abx_code': row.get('abx_code', ' '),
+#                         'Laboratory_Staff': row.get('Laboratory_Staff', ' '),
+#                         'Date_Accomplished_ARSP': row.get('Date_Accomplished_ARSP', ' '),
+#                         'ars_notes': row.get('ars_notes', ' '),
+#                         'ars_contact': row.get('ars_contact', ' '),
+#                         'ars_email': row.get('ars_email', ' '),
+#                         # Add other fields here as needed
+#                     }
+#                 )
+
+#                 # Clear previous antibiotics for this entry
+#                 AntibioticEntry.objects.filter(ab_idNumber_egasp=egasp_obj).delete()
+
+#                 # Loop over antibiotics in the row
+#                 for field in row:
+#                     if field.endswith('_Val'):
+#                         abx_code = field.replace('_Val', '')
+#                         val = row.get(f'{abx_code}_Val', '').strip()
+#                         ris = row.get(f'{abx_code}_RIS', '').strip()
+#                         operand = row.get(f'{abx_code}_Op', '').strip()
+
+#                         rt_val = row.get(f'{abx_code}_RT_Val', '').strip()
+#                         rt_ris = row.get(f'{abx_code}_RT_RIS', '').strip()
+#                         rt_operand = row.get(f'{abx_code}_RT_Op', '').strip()
+
+#                         if not val and not rt_val:
+#                             continue  # Skip if no values at all
+
+#                         is_disk_abx = BreakpointsTable.objects.filter(
+#                             Whonet_Abx=abx_code, Disk_Abx=True
+#                         ).exists()
+
+#                         abx_entry = AntibioticEntry(
+#                             ab_idNumber_egasp=egasp_obj,
+#                             ab_EgaspId=egasp_id,
+#                             ab_Abx_code=abx_code,
+#                         )
+
+#                         if is_disk_abx:
+#                             abx_entry.ab_Disk_value = val
+#                             abx_entry.ab_Disk_RIS = ris
+#                             abx_entry.ab_Retest_DiskValue = rt_val
+#                             abx_entry.ab_Retest_Disk_RIS = rt_ris
+#                         else:
+#                             abx_entry.ab_MIC_value = val
+#                             abx_entry.ab_MIC_RIS = ris
+#                             abx_entry.ab_MIC_operand = operand
+#                             abx_entry.ab_Retest_MICValue = rt_val
+#                             abx_entry.ab_Retest_MIC_RIS = rt_ris
+#                             abx_entry.ab_Retest_MIC_operand = rt_operand
+
+#                         abx_entry.save()
+
+#                         # Link antibiotic to matching breakpoints
+#                         bp_matches = BreakpointsTable.objects.filter(Whonet_Abx=abx_code)
+#                         if bp_matches.exists():
+#                             abx_entry.ab_breakpoints_id.set(bp_matches)
+
+#             messages.success(request, "CSV uploaded and data imported successfully.")
+#             return redirect('show_data')
+#     else:
+
+#         messages.error(request, 'Error uploading file')
+#         form = UploadDataForm()
+
+#     return render(request, 'tables.html', {'upload_form': upload_form})
+
+
+
 #download combined table
+def is_blank(value):
+    return value in [None, '', 0]
+
+
 def download_combined_table(request):
-    # Fetch all Egasp_Data entries
     egasp_data_entries = Egasp_Data.objects.all()
 
-    # Fetch all unique antibiotic codes (both initial and retest), excluding None values
-    unique_antibiotics_raw = (
-        AntibioticEntry.objects
-        .values_list('ab_Abx_code', 'ab_Retest_Abx_code')
-        .distinct()
-    )
-
-    # Flatten and clean the list (avoid duplicates)
-    antibiotic_set = set()
-    for abx_code, retest_code in unique_antibiotics_raw:
+    # Collect unique antibiotics from both abx and retest
+    unique_abx_codes = set()
+    for abx_code, rt_code in AntibioticEntry.objects.values_list('ab_Abx_code', 'ab_Retest_Abx_code').distinct():
         if abx_code:
-            antibiotic_set.add(abx_code)
-        if retest_code:
-            antibiotic_set.add(retest_code)
+            unique_abx_codes.add(abx_code)
+        if rt_code:
+            unique_abx_codes.add(rt_code)
 
-    # Sort the antibiotics alphabetically
-    sorted_antibiotics = sorted(antibiotic_set)
+    sorted_antibiotics = sorted(unique_abx_codes)
 
-    # Create the HTTP response for CSV download
-    response = HttpResponse(content_type='text/csv')
+    # Pre-check which antibiotics are disk types
+    disk_abx_lookup = {
+        abx: BreakpointsTable.objects.filter(Whonet_Abx=abx, Disk_Abx=True).exists()
+        for abx in sorted_antibiotics
+    }
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="combined_table.csv"'
-
-    # Create a CSV writer
+    response.write('\ufeff')  # UTF-8 BOM
     writer = csv.writer(response)
 
-    # Write the header row
-    header = [
-        'Date_of_Entry','ID_Number','Egasp_Id','PTIDCode','Laboratory','Clinic','Consult_Date','Consult_Type','Client_Type','Uic_Ptid','Clinic_Code','ClinicCodeGen','First_Name','Middle_Name','Last_Name','Suffix','Birthdate','Age','Sex','Gender_Identity','Gender_Identity_Other','Occupation','Civil_Status','Civil_Status_Other','Current_Province','Current_City','Current_Country','PermAdd_same_CurrAdd','Permanent_Province','Permanent_City','Permanent_Country','Other_Country','Nationality','Nationality_Other','Travel_History','Travel_History_Specify','Client_Group','Client_Group_Other','History_Of_Sex_Partner','Nationality_Sex_Partner','Date_of_Last_Sex','Nationality_Sex_Partner_Other','Number_Of_Sex_Partners','Relationship_to_Partners','SB_Urethral','SB_Vaginal','SB_Anal_Insertive','SB_Oral_Insertive','Sharing_of_Sex_Toys','SB_Oral_Receptive','SB_Anal_Receptive','SB_Others','Sti_None','Sti_Hiv','Sti_Hepatitis_B','Sti_Hepatitis_C','Sti_NGI','Sti_Syphilis','Sti_Chlamydia','Sti_Anogenital_Warts','Sti_Genital_Ulcer','Sti_Herpes','Sti_Other','Sti_Trichomoniasis','Sti_Mycoplasma_genitalium','Sti_Lymphogranuloma','Illicit_Drug_Use','Illicit_Drug_Specify','Abx_Use_Prescribed','Abx_Use_Prescribed_Specify','Abx_Use_Self_Medicated','Abx_Use_Self_Medicated_Specify','Abx_Use_None','Abx_Use_Other','Abx_Use_Other_Specify','Route_Oral','Route_Injectable_IV','Route_Dermal','Route_Suppository','Route_Other','Symp_With_Discharge','Symp_No','Symp_Discharge_Urethra','Symp_Discharge_Vagina','Symp_Discharge_Anus','Symp_Discharge_Oropharyngeal','Symp_Pain_Lower_Abdomen','Symp_Tender_Testicles','Symp_Painful_Urination','Symp_Painful_Intercourse','Symp_Rectal_Pain','Symp_Other','Outcome_Of_Follow_Up_Visit','Prev_Test_Pos','Prev_Test_Pos_Date','Result_Test_Cure_Initial','Result_Test_Cure_Followup','NoTOC_Other_Test','NoTOC_DatePerformed','NoTOC_Result_of_Test','Patient_Compliance_Antibiotics','OtherDrugs_Specify','OtherDrugs_Dosage','OtherDrugs_Route','OtherDrugs_Duration','Gonorrhea_Treatment','Treatment_Outcome','Primary_Antibiotic','Primary_Abx_Other','Secondary_Antibiotic','Secondary_Abx_Other','Notes','Clinic_Staff','Requesting_Physician','Telephone_Number','Email_Address','Date_Accomplished_Clinic','Date_Requested_Clinic','Date_Specimen_Collection','Specimen_Code','Specimen_Type','Specimen_Quality','Date_Of_Gram_Stain','Diagnosis_At_This_Visit','Gram_Neg_Intracellular','Gram_Neg_Extracellular','Gs_Presence_Of_Pus_Cells','Presence_GN_Intracellular','Presence_GN_Extracellular','GS_Pus_Cells','Epithelial_Cells','GS_Date_Released','GS_Others','GS_Negative','Gs_Gram_neg_diplococcus','Gs_NoGram_neg_diplococcus','Gs_Not_performed','Date_Received_in_lab','Positive_Culture_Date','Culture_Result','Growth','Growth_span','Species_Identification','Other_species_ID','Specimen_Quality_Cs','Susceptibility_Testing_Date','Retested_Mic','Confirmation_Ast_Date','NAAT_ng','NAAT_chl','Beta_Lactamase','PPng','TRng','Date_Released','For_possible_WGS','Date_stocked','Location','abx_code','Laboratory_Staff','Date_Accomplished_ARSP','ars_notes','ars_contact','ars_email'
-
+    # Static fields (as you defined)
+    static_fields = [
+        'Date_of_Entry', 'ID_Number', 'Egasp_Id', 'PTIDCode', 'Laboratory', 'Clinic', 'Consult_Date',
+        'Consult_Type', 'Client_Type', 'Uic_Ptid', 'Clinic_Code', 'ClinicCodeGen', 'First_Name', 'Middle_Name',
+        'Last_Name', 'Suffix', 'Birthdate', 'Age', 'Sex', 'Gender_Identity', 'Gender_Identity_Other',
+        'Occupation', 'Civil_Status', 'Civil_Status_Other', 'Current_Province', 'Current_City', 'Current_Country',
+        'PermAdd_same_CurrAdd', 'Permanent_Province', 'Permanent_City', 'Permanent_Country', 'Other_Country',
+        'Nationality', 'Nationality_Other', 'Travel_History', 'Travel_History_Specify', 'Client_Group',
+        'Client_Group_Other', 'History_Of_Sex_Partner', 'Nationality_Sex_Partner', 'Date_of_Last_Sex',
+        'Nationality_Sex_Partner_Other', 'Number_Of_Sex_Partners', 'Relationship_to_Partners', 'SB_Urethral',
+        'SB_Vaginal', 'SB_Anal_Insertive', 'SB_Oral_Insertive', 'Sharing_of_Sex_Toys', 'SB_Oral_Receptive',
+        'SB_Anal_Receptive', 'SB_Others', 'Sti_None', 'Sti_Hiv', 'Sti_Hepatitis_B', 'Sti_Hepatitis_C',
+        'Sti_NGI', 'Sti_Syphilis', 'Sti_Chlamydia', 'Sti_Anogenital_Warts', 'Sti_Genital_Ulcer', 'Sti_Herpes',
+        'Sti_Other', 'Sti_Trichomoniasis', 'Sti_Mycoplasma_genitalium', 'Sti_Lymphogranuloma', 'Illicit_Drug_Use',
+        'Illicit_Drug_Specify', 'Abx_Use_Prescribed', 'Abx_Use_Prescribed_Specify', 'Abx_Use_Self_Medicated',
+        'Abx_Use_Self_Medicated_Specify', 'Abx_Use_None', 'Abx_Use_Other', 'Abx_Use_Other_Specify',
+        'Route_Oral', 'Route_Injectable_IV', 'Route_Dermal', 'Route_Suppository', 'Route_Other',
+        'Symp_With_Discharge', 'Symp_No', 'Symp_Discharge_Urethra', 'Symp_Discharge_Vagina',
+        'Symp_Discharge_Anus', 'Symp_Discharge_Oropharyngeal', 'Symp_Pain_Lower_Abdomen', 'Symp_Tender_Testicles',
+        'Symp_Painful_Urination', 'Symp_Painful_Intercourse', 'Symp_Rectal_Pain', 'Symp_Other',
+        'Outcome_Of_Follow_Up_Visit', 'Prev_Test_Pos', 'Prev_Test_Pos_Date', 'Result_Test_Cure_Initial',
+        'Result_Test_Cure_Followup', 'NoTOC_Other_Test', 'NoTOC_DatePerformed', 'NoTOC_Result_of_Test',
+        'Patient_Compliance_Antibiotics', 'OtherDrugs_Specify', 'OtherDrugs_Dosage', 'OtherDrugs_Route',
+        'OtherDrugs_Duration', 'Gonorrhea_Treatment', 'Treatment_Outcome', 'Primary_Antibiotic',
+        'Primary_Abx_Other', 'Secondary_Antibiotic', 'Secondary_Abx_Other', 'Notes', 'Clinic_Staff',
+        'Requesting_Physician', 'Telephone_Number', 'Email_Address', 'Date_Accomplished_Clinic',
+        'Date_Requested_Clinic', 'Date_Specimen_Collection', 'Specimen_Code', 'Specimen_Type',
+        'Specimen_Quality', 'Date_Of_Gram_Stain', 'Diagnosis_At_This_Visit', 'Gram_Neg_Intracellular',
+        'Gram_Neg_Extracellular', 'Gs_Presence_Of_Pus_Cells', 'Presence_GN_Intracellular',
+        'Presence_GN_Extracellular', 'GS_Pus_Cells', 'Epithelial_Cells', 'GS_Date_Released', 'GS_Others',
+        'GS_Negative', 'Gs_Gram_neg_diplococcus', 'Gs_NoGram_neg_diplococcus', 'Gs_Not_performed',
+        'Date_Received_in_lab', 'Positive_Culture_Date', 'Culture_Result', 'Growth', 'Growth_span',
+        'Species_Identification', 'Other_species_ID', 'Specimen_Quality_Cs', 'Susceptibility_Testing_Date',
+        'Retested_Mic', 'Confirmation_Ast_Date', 'NAAT_ng', 'NAAT_chl', 'Beta_Lactamase', 'PPng', 'TRng',
+        'Date_Released', 'For_possible_WGS', 'Date_stocked', 'Location', 'abx_code', 'Laboratory_Staff',
+        'Date_Accomplished_ARSP', 'ars_notes', 'ars_license', 'ars_designation', 'Validator_Pers',
+        'Date_Validated_ARSP', 'val_license', 'val_designation'
     ]
 
-    # Add antibiotic-related headers
+    header = static_fields[:]
     for abx in sorted_antibiotics:
-        is_disk_abx = BreakpointsTable.objects.filter(Whonet_Abx=abx, Disk_Abx=True).exists()
-        if not is_disk_abx:  # Add _Op fields only for MIC antibiotics
-            header.append(f'{abx}_Op')
         header.append(f'{abx}_Val')
         header.append(f'{abx}_RIS')
-        if not is_disk_abx:  # Add RT_Op fields only for MIC antibiotics
-            header.append(f'{abx}_RT_Op')
         header.append(f'{abx}_RT_Val')
         header.append(f'{abx}_RT_RIS')
 
     writer.writerow(header)
 
-    #write each data row
-    for egasp_entry in egasp_data_entries:
-        row = [
-          egasp_entry.Date_of_Entry,egasp_entry.ID_Number,egasp_entry.Egasp_Id,egasp_entry.PTIDCode,egasp_entry.Laboratory,egasp_entry.Clinic,egasp_entry.Consult_Date,egasp_entry.Consult_Type,egasp_entry.Client_Type,egasp_entry.Uic_Ptid,egasp_entry.Clinic_Code,egasp_entry.ClinicCodeGen,egasp_entry.First_Name,egasp_entry.Middle_Name,egasp_entry.Last_Name,egasp_entry.Suffix,egasp_entry.Birthdate,egasp_entry.Age,egasp_entry.Sex,egasp_entry.Gender_Identity,egasp_entry.Gender_Identity_Other,egasp_entry.Occupation,egasp_entry.Civil_Status,egasp_entry.Civil_Status_Other,egasp_entry.Current_Province,egasp_entry.Current_City,egasp_entry.Current_Country,egasp_entry.PermAdd_same_CurrAdd,egasp_entry.Permanent_Province,egasp_entry.Permanent_City,egasp_entry.Permanent_Country,egasp_entry.Other_Country,egasp_entry.Nationality,egasp_entry.Nationality_Other,egasp_entry.Travel_History,egasp_entry.Travel_History_Specify,egasp_entry.Client_Group,egasp_entry.Client_Group_Other,egasp_entry.History_Of_Sex_Partner,egasp_entry.Nationality_Sex_Partner,egasp_entry.Date_of_Last_Sex,egasp_entry.Nationality_Sex_Partner_Other,egasp_entry.Number_Of_Sex_Partners,egasp_entry.Relationship_to_Partners,egasp_entry.SB_Urethral,egasp_entry.SB_Vaginal,egasp_entry.SB_Anal_Insertive,egasp_entry.SB_Oral_Insertive,egasp_entry.Sharing_of_Sex_Toys,egasp_entry.SB_Oral_Receptive,egasp_entry.SB_Anal_Receptive,egasp_entry.SB_Others,egasp_entry.Sti_None,egasp_entry.Sti_Hiv,egasp_entry.Sti_Hepatitis_B,egasp_entry.Sti_Hepatitis_C,egasp_entry.Sti_NGI,egasp_entry.Sti_Syphilis,egasp_entry.Sti_Chlamydia,egasp_entry.Sti_Anogenital_Warts,egasp_entry.Sti_Genital_Ulcer,egasp_entry.Sti_Herpes,egasp_entry.Sti_Other,egasp_entry.Sti_Trichomoniasis,egasp_entry.Sti_Mycoplasma_genitalium,egasp_entry.Sti_Lymphogranuloma,egasp_entry.Illicit_Drug_Use,egasp_entry.Illicit_Drug_Specify,egasp_entry.Abx_Use_Prescribed,egasp_entry.Abx_Use_Prescribed_Specify,egasp_entry.Abx_Use_Self_Medicated,egasp_entry.Abx_Use_Self_Medicated_Specify,egasp_entry.Abx_Use_None,egasp_entry.Abx_Use_Other,egasp_entry.Abx_Use_Other_Specify,egasp_entry.Route_Oral,egasp_entry.Route_Injectable_IV,egasp_entry.Route_Dermal,egasp_entry.Route_Suppository,egasp_entry.Route_Other,egasp_entry.Symp_With_Discharge,egasp_entry.Symp_No,egasp_entry.Symp_Discharge_Urethra,egasp_entry.Symp_Discharge_Vagina,egasp_entry.Symp_Discharge_Anus,egasp_entry.Symp_Discharge_Oropharyngeal,egasp_entry.Symp_Pain_Lower_Abdomen,egasp_entry.Symp_Tender_Testicles,egasp_entry.Symp_Painful_Urination,egasp_entry.Symp_Painful_Intercourse,egasp_entry.Symp_Rectal_Pain,egasp_entry.Symp_Other,egasp_entry.Outcome_Of_Follow_Up_Visit,egasp_entry.Prev_Test_Pos,egasp_entry.Prev_Test_Pos_Date,egasp_entry.Result_Test_Cure_Initial,egasp_entry.Result_Test_Cure_Followup,egasp_entry.NoTOC_Other_Test,egasp_entry.NoTOC_DatePerformed,egasp_entry.NoTOC_Result_of_Test,egasp_entry.Patient_Compliance_Antibiotics,egasp_entry.OtherDrugs_Specify,egasp_entry.OtherDrugs_Dosage,egasp_entry.OtherDrugs_Route,egasp_entry.OtherDrugs_Duration,egasp_entry.Gonorrhea_Treatment,egasp_entry.Treatment_Outcome,egasp_entry.Primary_Antibiotic,egasp_entry.Primary_Abx_Other,egasp_entry.Secondary_Antibiotic,egasp_entry.Secondary_Abx_Other,egasp_entry.Notes,egasp_entry.Clinic_Staff,egasp_entry.Requesting_Physician,egasp_entry.Telephone_Number,egasp_entry.Email_Address,egasp_entry.Date_Accomplished_Clinic,egasp_entry.Date_Requested_Clinic,egasp_entry.Date_Specimen_Collection,egasp_entry.Specimen_Code,egasp_entry.Specimen_Type,egasp_entry.Specimen_Quality,egasp_entry.Date_Of_Gram_Stain,egasp_entry.Diagnosis_At_This_Visit,egasp_entry.Gram_Neg_Intracellular,egasp_entry.Gram_Neg_Extracellular,egasp_entry.Gs_Presence_Of_Pus_Cells,egasp_entry.Presence_GN_Intracellular,egasp_entry.Presence_GN_Extracellular,egasp_entry.GS_Pus_Cells,egasp_entry.Epithelial_Cells,egasp_entry.GS_Date_Released,egasp_entry.GS_Others,egasp_entry.GS_Negative,egasp_entry.Gs_Gram_neg_diplococcus,egasp_entry.Gs_NoGram_neg_diplococcus,egasp_entry.Gs_Not_performed,egasp_entry.Date_Received_in_lab,egasp_entry.Positive_Culture_Date,egasp_entry.Culture_Result,egasp_entry.Growth,egasp_entry.Growth_span,egasp_entry.Species_Identification,egasp_entry.Other_species_ID,egasp_entry.Specimen_Quality_Cs,egasp_entry.Susceptibility_Testing_Date,egasp_entry.Retested_Mic,egasp_entry.Confirmation_Ast_Date,egasp_entry.NAAT_ng,egasp_entry.NAAT_chl,egasp_entry.Beta_Lactamase,egasp_entry.PPng,egasp_entry.TRng,egasp_entry.Date_Released,egasp_entry.For_possible_WGS,egasp_entry.Date_stocked,egasp_entry.Location,egasp_entry.abx_code,egasp_entry.Laboratory_Staff,egasp_entry.Date_Accomplished_ARSP,egasp_entry.ars_notes,egasp_entry.ars_contact,egasp_entry.ars_email
-        ]
-
-        # Fetch related antibiotics for this Egasp entry, sorted
-        antibiotics = AntibioticEntry.objects.filter(ab_idNumber_egasp=egasp_entry).order_by('ab_Abx_code')
-
-        # Create a mapping for quick lookup
+    for egasp in egasp_data_entries:
+        row = [getattr(egasp, field, '') for field in static_fields]
+        abx_entries = AntibioticEntry.objects.filter(ab_idNumber_egasp=egasp)
         abx_data = {}
-        for antibiotic in antibiotics:
-            if antibiotic.ab_Abx_code:
-                abx_data[antibiotic.ab_Abx_code] = {
-                    '_Val': antibiotic.ab_Disk_value or antibiotic.ab_MIC_value,
-                    '_RIS': antibiotic.ab_Disk_RIS or antibiotic.ab_MIC_RIS,
-                    '_Op': antibiotic.ab_MIC_operand or '',
-                }
-            if antibiotic.ab_Retest_Abx_code:
-                abx_data[antibiotic.ab_Retest_Abx_code] = {
-                    'RT_Val': antibiotic.ab_Retest_DiskValue or antibiotic.ab_Retest_MICValue,
-                    'RT_RIS': antibiotic.ab_Retest_Disk_RIS or antibiotic.ab_Retest_MIC_RIS,
-                    'RT_Op': antibiotic.ab_Retest_MIC_operand or '',
-                }
 
-        # Now add antibiotic fields in the sorted order
+        for ab in abx_entries:
+            # Initial result
+            if ab.ab_Abx_code:
+                code = ab.ab_Abx_code
+                if code not in abx_data:
+                    abx_data[code] = {}
+                if not is_blank(ab.ab_MIC_value) or not is_blank(ab.ab_Disk_value):
+                    val = ab.ab_Disk_value if not is_blank(ab.ab_Disk_value) else f"{ab.ab_MIC_operand or ''}{ab.ab_MIC_value}"
+                    ris = ab.ab_Disk_RIS or ab.ab_MIC_RIS
+                    abx_data[code].update({
+                        '_Val': val,
+                        '_RIS': ris,
+                    })
+
+            # Retest result
+            if ab.ab_Retest_Abx_code:
+                code = ab.ab_Retest_Abx_code
+                if code not in abx_data:
+                    abx_data[code] = {}
+                if not is_blank(ab.ab_Retest_MICValue) or not is_blank(ab.ab_Retest_DiskValue):
+                    rt_val = ab.ab_Retest_DiskValue if not is_blank(ab.ab_Retest_DiskValue) else f"{ab.ab_Retest_MIC_operand or ''}{ab.ab_Retest_MICValue}"
+                    rt_ris = ab.ab_Retest_Disk_RIS or ab.ab_Retest_MIC_RIS
+                    abx_data[code].update({
+                        'RT_Val': rt_val,
+                        'RT_RIS': rt_ris,
+                    })
+
+        # Populate row with antibiotic data
         for abx in sorted_antibiotics:
-            is_disk_abx = BreakpointsTable.objects.filter(Whonet_Abx=abx, Disk_Abx=True).exists()
-            if abx in abx_data:
-                if not is_disk_abx:  # Add _Op field only for MIC antibiotics
-                    row.append(abx_data[abx].get('_Op', ''))
-                val = abx_data[abx].get('_Val', '')
-                if isinstance(val, (float, int)): 
-                    val = format(val, '.3f')  # Keeps 3 decimal places (e.g., 0.003)
-                row.append(val)
-                row.append(abx_data[abx].get('_RIS', ''))
-                if not is_disk_abx:  # Add RT_Op field only for MIC antibiotics
-                    row.append(abx_data[abx].get('RT_Op', ''))
-                rt_val = abx_data[abx].get('RT_Val', '')
-                if isinstance(rt_val,(float, int)): 
-                    rt_val = format(rt_val, '3f') # Keeps 3 decimal places (e.g., 0.003)
-                row.append(rt_val)
-                row.append(abx_data[abx].get('RT_RIS', ''))
-            else:
-                # If no data for this antibiotic, add empty columns
-                if not is_disk_abx:
-                    row.append('')  # Empty _Op field
-                row.extend(['', ''])  # Empty _Val and _RIS fields
-                if not is_disk_abx:
-                    row.append('')  # Empty RT_Op field
-                row.extend(['', ''])  # Empty RT_Val and RT_RIS fields
+            data = abx_data.get(abx, {})
+            val = data.get('_Val', '')
+            if isinstance(val, (int, float)):
+                val = format(val, '.3f')
+            rt_val = data.get('RT_Val', '')
+            if isinstance(rt_val, (int, float)):
+                rt_val = format(rt_val, '.3f')
+            row.extend([val, data.get('_RIS', ''), rt_val, data.get('RT_RIS', '')])
 
         writer.writerow(row)
 
     return response
-
-
-
-
-
-#for uploading data in tables egasp and antibiotics entries
-def upload_combined_table(request):
-    if request.method == 'POST':
-        upload_form = UploadDataForm(request.POST, request.FILES)
-        if form.is_valid():
-            uploaded_file = request.FILES['data_upload']
-            csv_file = TextIOWrapper(uploaded_file.file, encoding='utf-8')
-            reader = csv.DictReader(csv_file)
-
-
-            for row in reader:
-                egasp_id = row.get('Egasp_Id')
-                if not egasp_id:
-                    continue  # Skip row without Egasp_Id
-                
-                # Create or update the Egasp_Data record
-                egasp_obj, created = Egasp_Data.objects.get_or_create(
-                    Egasp_Id=egasp_id,
-                    defaults={
-                        'Date_of_Entry': row.get('Date_of_Entry', ' '),
-                        'ID_Number': row.get('ID_Number', ' '),
-                        'Egasp_Id': row.get('Egasp_Id', ' '),
-                        'PTIDCode': row.get('PTIDCode', ' '),
-                        'Laboratory': row.get('Laboratory', ' '),
-                        'Clinic': row.get('Clinic', ' '),
-                        'Consult_Date': row.get('Consult_Date', ' '),
-                        'Consult_Type': row.get('Consult_Type', ' '),
-                        'Client_Type': row.get('Client_Type', ' '),
-                        'Uic_Ptid': row.get('Uic_Ptid', ' '),
-                        'Clinic_Code': row.get('Clinic_Code', ' '),
-                        'ClinicCodeGen': row.get('ClinicCodeGen', ' '),
-                        'First_Name': row.get('First_Name', ' '),
-                        'Middle_Name': row.get('Middle_Name', ' '),
-                        'Last_Name': row.get('Last_Name', ' '),
-                        'Suffix': row.get('Suffix', ' '),
-                        'Birthdate': row.get('Birthdate', ' '),
-                        'Age': row.get('Age', ' '),
-                        'Sex': row.get('Sex', ' '),
-                        'Gender_Identity': row.get('Gender_Identity', ' '),
-                        'Gender_Identity_Other': row.get('Gender_Identity_Other', ' '),
-                        'Occupation': row.get('Occupation', ' '),
-                        'Civil_Status': row.get('Civil_Status', ' '),
-                        'Civil_Status_Other': row.get('Civil_Status_Other', ' '),
-                        'Current_Province': row.get('Current_Province', ' '),
-                        'Current_City': row.get('Current_City', ' '),
-                        'Current_Country': row.get('Current_Country', ' '),
-                        'PermAdd_same_CurrAdd': row.get('PermAdd_same_CurrAdd', ' '),
-                        'Permanent_Province': row.get('Permanent_Province', ' '),
-                        'Permanent_City': row.get('Permanent_City', ' '),
-                        'Permanent_Country': row.get('Permanent_Country', ' '),
-                        'Other_Country': row.get('Other_Country', ' '),
-                        'Nationality': row.get('Nationality', ' '),
-                        'Nationality_Other': row.get('Nationality_Other', ' '),
-                        'Travel_History': row.get('Travel_History', ' '),
-                        'Travel_History_Specify': row.get('Travel_History_Specify', ' '),
-                        'Client_Group': row.get('Client_Group', ' '),
-                        'Client_Group_Other': row.get('Client_Group_Other', ' '),
-                        'History_Of_Sex_Partner': row.get('History_Of_Sex_Partner', ' '),
-                        'Nationality_Sex_Partner': row.get('Nationality_Sex_Partner', ' '),
-                        'Date_of_Last_Sex': row.get('Date_of_Last_Sex', ' '),
-                        'Nationality_Sex_Partner_Other': row.get('Nationality_Sex_Partner_Other', ' '),
-                        'Number_Of_Sex_Partners': row.get('Number_Of_Sex_Partners', ' '),
-                        'Relationship_to_Partners': row.get('Relationship_to_Partners', ' '),
-                        'SB_Urethral': row.get('SB_Urethral', ' '),
-                        'SB_Vaginal': row.get('SB_Vaginal', ' '),
-                        'SB_Anal_Insertive': row.get('SB_Anal_Insertive', ' '),
-                        'SB_Oral_Insertive': row.get('SB_Oral_Insertive', ' '),
-                        'Sharing_of_Sex_Toys': row.get('Sharing_of_Sex_Toys', ' '),
-                        'SB_Oral_Receptive': row.get('SB_Oral_Receptive', ' '),
-                        'SB_Anal_Receptive': row.get('SB_Anal_Receptive', ' '),
-                        'SB_Others': row.get('SB_Others', ' '),
-                        'Sti_None': row.get('Sti_None', ' '),
-                        'Sti_Hiv': row.get('Sti_Hiv', ' '),
-                        'Sti_Hepatitis_B': row.get('Sti_Hepatitis_B', ' '),
-                        'Sti_Hepatitis_C': row.get('Sti_Hepatitis_C', ' '),
-                        'Sti_NGI': row.get('Sti_NGI', ' '),
-                        'Sti_Syphilis': row.get('Sti_Syphilis', ' '),
-                        'Sti_Chlamydia': row.get('Sti_Chlamydia', ' '),
-                        'Sti_Anogenital_Warts': row.get('Sti_Anogenital_Warts', ' '),
-                        'Sti_Genital_Ulcer': row.get('Sti_Genital_Ulcer', ' '),
-                        'Sti_Herpes': row.get('Sti_Herpes', ' '),
-                        'Sti_Other': row.get('Sti_Other', ' '),
-                        'Sti_Trichomoniasis': row.get('Sti_Trichomoniasis', ' '),
-                        'Sti_Mycoplasma_genitalium': row.get('Sti_Mycoplasma_genitalium', ' '),
-                        'Sti_Lymphogranuloma': row.get('Sti_Lymphogranuloma', ' '),
-                        'Illicit_Drug_Use': row.get('Illicit_Drug_Use', ' '),
-                        'Illicit_Drug_Specify': row.get('Illicit_Drug_Specify', ' '),
-                        'Abx_Use_Prescribed': row.get('Abx_Use_Prescribed', ' '),
-                        'Abx_Use_Prescribed_Specify': row.get('Abx_Use_Prescribed_Specify', ' '),
-                        'Abx_Use_Self_Medicated': row.get('Abx_Use_Self_Medicated', ' '),
-                        'Abx_Use_Self_Medicated_Specify': row.get('Abx_Use_Self_Medicated_Specify', ' '),
-                        'Abx_Use_None': row.get('Abx_Use_None', ' '),
-                        'Abx_Use_Other': row.get('Abx_Use_Other', ' '),
-                        'Abx_Use_Other_Specify': row.get('Abx_Use_Other_Specify', ' '),
-                        'Route_Oral': row.get('Route_Oral', ' '),
-                        'Route_Injectable_IV': row.get('Route_Injectable_IV', ' '),
-                        'Route_Dermal': row.get('Route_Dermal', ' '),
-                        'Route_Suppository': row.get('Route_Suppository', ' '),
-                        'Route_Other': row.get('Route_Other', ' '),
-                        'Symp_With_Discharge': row.get('Symp_With_Discharge', ' '),
-                        'Symp_No': row.get('Symp_No', ' '),
-                        'Symp_Discharge_Urethra': row.get('Symp_Discharge_Urethra', ' '),
-                        'Symp_Discharge_Vagina': row.get('Symp_Discharge_Vagina', ' '),
-                        'Symp_Discharge_Anus': row.get('Symp_Discharge_Anus', ' '),
-                        'Symp_Discharge_Oropharyngeal': row.get('Symp_Discharge_Oropharyngeal', ' '),
-                        'Symp_Pain_Lower_Abdomen': row.get('Symp_Pain_Lower_Abdomen', ' '),
-                        'Symp_Tender_Testicles': row.get('Symp_Tender_Testicles', ' '),
-                        'Symp_Painful_Urination': row.get('Symp_Painful_Urination', ' '),
-                        'Symp_Painful_Intercourse': row.get('Symp_Painful_Intercourse', ' '),
-                        'Symp_Rectal_Pain': row.get('Symp_Rectal_Pain', ' '),
-                        'Symp_Other': row.get('Symp_Other', ' '),
-                        'Outcome_Of_Follow_Up_Visit': row.get('Outcome_Of_Follow_Up_Visit', ' '),
-                        'Prev_Test_Pos': row.get('Prev_Test_Pos', ' '),
-                        'Prev_Test_Pos_Date': row.get('Prev_Test_Pos_Date', ' '),
-                        'Result_Test_Cure_Initial': row.get('Result_Test_Cure_Initial', ' '),
-                        'Result_Test_Cure_Followup': row.get('Result_Test_Cure_Followup', ' '),
-                        'NoTOC_Other_Test': row.get('NoTOC_Other_Test', ' '),
-                        'NoTOC_DatePerformed': row.get('NoTOC_DatePerformed', ' '),
-                        'NoTOC_Result_of_Test': row.get('NoTOC_Result_of_Test', ' '),
-                        'Patient_Compliance_Antibiotics': row.get('Patient_Compliance_Antibiotics', ' '),
-                        'OtherDrugs_Specify': row.get('OtherDrugs_Specify', ' '),
-                        'OtherDrugs_Dosage': row.get('OtherDrugs_Dosage', ' '),
-                        'OtherDrugs_Route': row.get('OtherDrugs_Route', ' '),
-                        'OtherDrugs_Duration': row.get('OtherDrugs_Duration', ' '),
-                        'Gonorrhea_Treatment': row.get('Gonorrhea_Treatment', ' '),
-                        'Treatment_Outcome': row.get('Treatment_Outcome', ' '),
-                        'Primary_Antibiotic': row.get('Primary_Antibiotic', ' '),
-                        'Primary_Abx_Other': row.get('Primary_Abx_Other', ' '),
-                        'Secondary_Antibiotic': row.get('Secondary_Antibiotic', ' '),
-                        'Secondary_Abx_Other': row.get('Secondary_Abx_Other', ' '),
-                        'Notes': row.get('Notes', ' '),
-                        'Clinic_Staff': row.get('Clinic_Staff', ' '),
-                        'Requesting_Physician': row.get('Requesting_Physician', ' '),
-                        'Telephone_Number': row.get('Telephone_Number', ' '),
-                        'Email_Address': row.get('Email_Address', ' '),
-                        'Date_Accomplished_Clinic': row.get('Date_Accomplished_Clinic', ' '),
-                        'Date_Requested_Clinic': row.get('Date_Requested_Clinic', ' '),
-                        'Date_Specimen_Collection': row.get('Date_Specimen_Collection', ' '),
-                        'Specimen_Code': row.get('Specimen_Code', ' '),
-                        'Specimen_Type': row.get('Specimen_Type', ' '),
-                        'Specimen_Quality': row.get('Specimen_Quality', ' '),
-                        'Date_Of_Gram_Stain': row.get('Date_Of_Gram_Stain', ' '),
-                        'Diagnosis_At_This_Visit': row.get('Diagnosis_At_This_Visit', ' '),
-                        'Gram_Neg_Intracellular': row.get('Gram_Neg_Intracellular', ' '),
-                        'Gram_Neg_Extracellular': row.get('Gram_Neg_Extracellular', ' '),
-                        'Gs_Presence_Of_Pus_Cells': row.get('Gs_Presence_Of_Pus_Cells', ' '),
-                        'Presence_GN_Intracellular': row.get('Presence_GN_Intracellular', ' '),
-                        'Presence_GN_Extracellular': row.get('Presence_GN_Extracellular', ' '),
-                        'GS_Pus_Cells': row.get('GS_Pus_Cells', ' '),
-                        'Epithelial_Cells': row.get('Epithelial_Cells', ' '),
-                        'GS_Date_Released': row.get('GS_Date_Released', ' '),
-                        'GS_Others': row.get('GS_Others', ' '),
-                        'GS_Negative': row.get('GS_Negative', ' '),
-                        'Gs_Gram_neg_diplococcus': row.get('Gs_Gram_neg_diplococcus', ' '),
-                        'Gs_NoGram_neg_diplococcus': row.get('Gs_NoGram_neg_diplococcus', ' '),
-                        'Gs_Not_performed': row.get('Gs_Not_performed', ' '),
-                        'Date_Received_in_lab': row.get('Date_Received_in_lab', ' '),
-                        'Positive_Culture_Date': row.get('Positive_Culture_Date', ' '),
-                        'Culture_Result': row.get('Culture_Result', ' '),
-                        'Growth': row.get('Growth', ' '),
-                        'Growth_span': row.get('Growth_span', ' '),
-                        'Species_Identification': row.get('Species_Identification', ' '),
-                        'Other_species_ID': row.get('Other_species_ID', ' '),
-                        'Specimen_Quality_Cs': row.get('Specimen_Quality_Cs', ' '),
-                        'Susceptibility_Testing_Date': row.get('Susceptibility_Testing_Date', ' '),
-                        'Retested_Mic': row.get('Retested_Mic', ' '),
-                        'Confirmation_Ast_Date': row.get('Confirmation_Ast_Date', ' '),
-                        'NAAT_ng': row.get('NAAT_ng', ' '),
-                        'NAAT_chl': row.get('NAAT_chl', ' '),
-                        'Beta_Lactamase': row.get('Beta_Lactamase', ' '),
-                        'PPng': row.get('PPng', ' '),
-                        'TRng': row.get('TRng', ' '),
-                        'Date_Released': row.get('Date_Released', ' '),
-                        'For_possible_WGS': row.get('For_possible_WGS', ' '),
-                        'Date_stocked': row.get('Date_stocked', ' '),
-                        'Location': row.get('Location', ' '),
-                        'abx_code': row.get('abx_code', ' '),
-                        'Laboratory_Staff': row.get('Laboratory_Staff', ' '),
-                        'Date_Accomplished_ARSP': row.get('Date_Accomplished_ARSP', ' '),
-                        'ars_notes': row.get('ars_notes', ' '),
-                        'ars_contact': row.get('ars_contact', ' '),
-                        'ars_email': row.get('ars_email', ' '),
-                        # Add other fields here as needed
-                    }
-                )
-
-                # Clear previous antibiotics for this entry
-                AntibioticEntry.objects.filter(ab_idNumber_egasp=egasp_obj).delete()
-
-                # Loop over antibiotics in the row
-                for field in row:
-                    if field.endswith('_Val'):
-                        abx_code = field.replace('_Val', '')
-                        val = row.get(f'{abx_code}_Val', '').strip()
-                        ris = row.get(f'{abx_code}_RIS', '').strip()
-                        operand = row.get(f'{abx_code}_Op', '').strip()
-
-                        rt_val = row.get(f'{abx_code}_RT_Val', '').strip()
-                        rt_ris = row.get(f'{abx_code}_RT_RIS', '').strip()
-                        rt_operand = row.get(f'{abx_code}_RT_Op', '').strip()
-
-                        if not val and not rt_val:
-                            continue  # Skip if no values at all
-
-                        is_disk_abx = BreakpointsTable.objects.filter(
-                            Whonet_Abx=abx_code, Disk_Abx=True
-                        ).exists()
-
-                        abx_entry = AntibioticEntry(
-                            ab_idNumber_egasp=egasp_obj,
-                            ab_EgaspId=egasp_id,
-                            ab_Abx_code=abx_code,
-                        )
-
-                        if is_disk_abx:
-                            abx_entry.ab_Disk_value = val
-                            abx_entry.ab_Disk_RIS = ris
-                            abx_entry.ab_Retest_DiskValue = rt_val
-                            abx_entry.ab_Retest_Disk_RIS = rt_ris
-                        else:
-                            abx_entry.ab_MIC_value = val
-                            abx_entry.ab_MIC_RIS = ris
-                            abx_entry.ab_MIC_operand = operand
-                            abx_entry.ab_Retest_MICValue = rt_val
-                            abx_entry.ab_Retest_MIC_RIS = rt_ris
-                            abx_entry.ab_Retest_MIC_operand = rt_operand
-
-                        abx_entry.save()
-
-                        # Link antibiotic to matching breakpoints
-                        bp_matches = BreakpointsTable.objects.filter(Whonet_Abx=abx_code)
-                        if bp_matches.exists():
-                            abx_entry.ab_breakpoints_id.set(bp_matches)
-
-            messages.success(request, "CSV uploaded and data imported successfully.")
-            return redirect('show_data')
-    else:
-
-        messages.error(request, 'Error uploading file')
-        form = UploadDataForm()
-
-    return render(request, 'tables.html', {'upload_form': upload_form})

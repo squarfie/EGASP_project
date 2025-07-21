@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from .models import AntibioticEntry, Egasp_Data
 import re
 
+
 def determine_ris(value, r_breakpoint, i_breakpoint, s_breakpoint, sdd_breakpoint, is_disk=False):
     # Ensure value and at least one of the breakpoints are provided
     if value is not None and (r_breakpoint is not None or s_breakpoint is not None or i_breakpoint is not None or sdd_breakpoint is not None):
@@ -110,12 +111,15 @@ def update_ris_interpretation(sender, instance, **kwargs):
     if disk_ris and disk_ris != instance.ab_Disk_RIS:
         instance.ab_Disk_RIS = disk_ris
         updated_fields.append("ab_Disk_RIS")
+    
 
     # Update ab_MIC_RIS
     mic_ris = determine_ris(instance.ab_MIC_value, instance.ab_R_breakpoint, instance.ab_I_breakpoint, instance.ab_S_breakpoint, instance.ab_SDD_breakpoint)
     if mic_ris and mic_ris != instance.ab_MIC_RIS:
         instance.ab_MIC_RIS = mic_ris
         updated_fields.append("ab_MIC_RIS")
+    
+
 
     # Update ab_Retest_Disk_RIS
     retest_disk_ris = determine_ris(instance.ab_Retest_DiskValue, instance.ab_Ret_R_breakpoint, instance.ab_Ret_I_breakpoint, instance.ab_Ret_S_breakpoint, instance.ab_Ret_SDD_breakpoint, is_disk=is_disk)
@@ -123,12 +127,21 @@ def update_ris_interpretation(sender, instance, **kwargs):
         instance.ab_Retest_Disk_RIS = retest_disk_ris
         updated_fields.append("ab_Retest_Disk_RIS")
 
+    
+    
     # Update ab_Retest_MIC_RIS
     retest_mic_ris = determine_ris(instance.ab_Retest_MICValue, instance.ab_Ret_R_breakpoint, instance.ab_Ret_I_breakpoint, instance.ab_Ret_S_breakpoint, instance.ab_Ret_SDD_breakpoint)
     if retest_mic_ris and retest_mic_ris != instance.ab_Retest_MIC_RIS:
         instance.ab_Retest_MIC_RIS = retest_mic_ris
         updated_fields.append("ab_Retest_MIC_RIS")
+    
+    
 
     # Only save if there are updates
     if updated_fields:
         instance.save(update_fields=updated_fields)
+
+
+
+
+

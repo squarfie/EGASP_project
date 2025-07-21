@@ -33,6 +33,7 @@ class LocationUpload(models.Model):
 class Egasp_Data(models.Model):
     Common_Choices = (
         ('',''),
+        ('n/a','n/a'),
         ('Yes', 'Yes'),
         ('No', 'No'),
         ('No Answer', 'No Answer')
@@ -434,11 +435,19 @@ class Egasp_Data(models.Model):
     Location=models.CharField(max_length=103,blank=True,)
     abx_code=models.CharField(max_length=25, blank=True, )
     #laboratory personnel
-    Laboratory_Staff = models.CharField(max_length=100,blank=True, null=True)
+    Laboratory_Staff = models.CharField(max_length=100,blank=True, null=True,)
     Date_Accomplished_ARSP=models.DateField(blank=True, null=True)
     ars_notes = models.TextField(blank=True, max_length=255, null=True)
-    ars_contact = PhoneNumberField(blank=True, null=True)
-    ars_email = models.EmailField(blank=True, null=True, validators=[EmailValidator()])
+    # ars_contact = models.CharField(max_length=27, blank=True, null=True)
+    # ars_email = models.EmailField(blank=True, null=True, validators=[EmailValidator()])
+    ars_license = models.CharField(max_length=100,blank=True, null=True, default="")
+    ars_designation = models.CharField(max_length=100,blank=True, null=True, default="")
+    Validator_Pers = models.CharField(max_length=100,blank=True, null=True,)
+    Date_Validated_ARSP=models.DateField(blank=True, null=True)
+    # val_contact = models.CharField(max_length=27,blank=True, null=True)
+    # val_email = models.EmailField(blank=True, null=True, validators=[EmailValidator()])
+    val_license = models.CharField(max_length=100,blank=True, null=True, default="")
+    val_designation =  models.CharField(max_length=100,blank=True, null=True, default="")
 
     def __str__(self):
         return self.Egasp_Id
@@ -559,8 +568,8 @@ class AntibioticEntry(models.Model):
     ab_Ret_SDD_breakpoint = models.CharField(max_length=10, blank=True, null=True)
     ab_Ret_S_breakpoint = models.CharField(max_length=10, blank=True, null=True)    
 
-    #for joining of operand and MIC values
-    ab_MICjoined = models.CharField(max_length=7, blank=True, null=True)    
+    # #for joining of operand and MIC values
+    # ab_MICjoined = models.CharField(max_length=7, blank=True, null=True)    
     def __str__(self):
         return ", ".join([abx.Whonet_Abx for abx in self.ab_breakpoints_id.all()]) 
 
@@ -585,9 +594,10 @@ class Meta:
 # Address Book
 class Clinic_Staff_Details(models.Model):
     ClinStaff_Name = models.CharField(max_length=100, blank=True, null=True)
-    ClinStaff_Telnum = PhoneNumberField(blank=True, region="PH", null=True)
-    ClinStaff_EmailAdd = models.EmailField(max_length=100, blank=True, null=True)
+    ClinStaff_License= models.CharField(max_length=100, blank=True, null=True)
+    ClinStaff_Designation= models.CharField(max_length=150, blank=True, null=True)
 
     def __str__(self):
         return self.ClinStaff_Name if self.ClinStaff_Name else "Unnamed Staff"
+
 

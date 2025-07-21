@@ -19,7 +19,15 @@ class egasp_Form(forms.ModelForm):
              queryset=Clinic_Staff_Details.objects.all(),
              to_field_name='ClinStaff_Name',
              widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-             empty_label=None,
+             empty_label="",
+             required=False,
+        )
+        
+        Validator_Pers = forms.ModelChoiceField(
+             queryset=Clinic_Staff_Details.objects.all(),
+             to_field_name='ClinStaff_Name',
+             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
+             empty_label="",
              required=False,
         )
 
@@ -35,7 +43,7 @@ class egasp_Form(forms.ModelForm):
         Current_City = forms.ModelChoiceField(
             queryset=City.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label="None",
+            empty_label=None,
             to_field_name='cityname',
             required=False,
             
@@ -45,7 +53,7 @@ class egasp_Form(forms.ModelForm):
         Current_Province = forms.ModelChoiceField(
             queryset=Province.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label="None",
+            empty_label=None,
             to_field_name='provincename',
             required=False,
             
@@ -54,7 +62,7 @@ class egasp_Form(forms.ModelForm):
         Permanent_City = forms.ModelChoiceField(
             queryset=City.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label="None",
+            empty_label=None,
             to_field_name='cityname',
             required=False,
             
@@ -63,7 +71,7 @@ class egasp_Form(forms.ModelForm):
         Permanent_Province = forms.ModelChoiceField(
             queryset=Province.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
-            empty_label="None",
+            empty_label=None,
             to_field_name='provincename',
             required=False,
             
@@ -89,6 +97,7 @@ class egasp_Form(forms.ModelForm):
             'Date_Requested_Clinic' :forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'MM/DD/YYYY'}),
             'Date_Accomplished_Clinic': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'MM/DD/YYYY'}),
             'Date_Accomplished_ARSP' :forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'MM/DD/YYYY'}),
+            'Date_Validated_ARSP' :forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'MM/DD/YYYY'}),
             'Date_Released' :forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'MM/DD/YYYY'}),
             'Date_stocked' :forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'MM/DD/YYYY'}),
             'Notes': forms.Textarea(attrs={'class': 'textarea form-control', 'rows': '3'}),
@@ -182,8 +191,8 @@ class egasp_Form(forms.ModelForm):
              # Initialize clinic_staff field
             self.fields['Laboratory_Staff'].queryset = Clinic_Staff_Details.objects.all()
             self.fields['Laboratory_Staff'].widget.attrs.update({'class': 'form-control'})
-            self.fields['ars_contact'].widget.attrs['readonly'] = True
-            self.fields['ars_email'].widget.attrs['readonly'] = True
+            self.fields['Validator_Pers'].queryset = Clinic_Staff_Details.objects.all()
+            self.fields['Validator_Pers'].widget.attrs.update({'class': 'form-control'})
 
             # choice fields str set to required = False to prevent an error during saving after edit 
             # error occurs because none=yes makes some fields non editable.
@@ -283,7 +292,11 @@ class egasp_Form(forms.ModelForm):
             self.fields['TRng'].required=False
             self.fields['For_possible_WGS'].required=False
             self.fields['Laboratory_Staff'].required=False
-
+            self.fields['Validator_Pers'].required=False
+            self.fields['ars_license'].required=False
+            self.fields['val_license'].required=False
+            self.fields['ars_designation'].required=False
+            self.fields['val_designation'].required=False
 
 
              # Populate cities on edit mode (instance exists and has provinces set)
@@ -385,13 +398,13 @@ class ContactForm(forms.ModelForm):
         model = Clinic_Staff_Details
         fields = '__all__'
 
-    def __init__(self, *args, **kwargs):
-        super(ContactForm, self).__init__(*args, **kwargs)
-        self.fields['ClinStaff_Telnum'].widget = forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': '09171234567',  # Philippine phone number format
-            'readonly': False  # Ensure it's not blocking JavaScript updates
-        })
+    # def __init__(self, *args, **kwargs):
+    #     super(ContactForm, self).__init__(*args, **kwargs)
+    #     self.fields['ClinStaff_Telnum'].widget = forms.TextInput(attrs={
+    #         'class': 'form-control',
+    #         'placeholder': '09171234567',  # Philippine phone number format
+    #         'readonly': False  # Ensure it's not blocking JavaScript updates
+    #     })
 
 #for locations
 class ProvinceForm(forms.ModelForm):

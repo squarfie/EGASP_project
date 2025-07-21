@@ -18,7 +18,7 @@
                     </nav>
                 </div>
                 <div class="col-lg-6 col-5 text-right">
-                    <a class="btn btn-sm btn-neutral" href="{% url 'add_contact' %}">Add New</a>
+                    <a class="btn btn-sm btn-neutral" href="{% url 'add_contact' %}">Add Contact</a>
                     <a href="#" class="btn btn-sm btn-neutral">Filters</a>
                 </div>
             </div>
@@ -53,23 +53,23 @@
                 </div>
                 <!-- Light table -->
                 <div class="table-responsive">
-                    <table class="table align-items-center table-flush" style="border-collapse: collapse; margin: 0%; padding: 0%;">
+                    <table class="table align-items-center table-flush" style="border-collapse: collapse; margin: 0%; padding: 0%; text-align: center;">
                         <thead class="thead-light">
                             <tr>
-                                <th scope="col"></th>
+                                <th scope="col" >Action</th>
                                 <th scope="col" class="sort" data-sort="ClinStaff_Name">Name</th>
-                                <th scope="col" class="sort" data-sort="ClinStaff_Telnum">Telephone Number</th>
-                                <th scope="col" class="sort" data-sort="ClinStaff_EmailAdd">Email Address</th>
+                                <th scope="col" class="sort" data-sort="ClinStaff_License">License No.</th>
+                                <th scope="col" class="sort" data-sort="ClinStaff_License">Designation</th>
+                                
                             </tr>
                         </thead>
                         <tbody class="list">
                             {% for contact_item in contact_items %}
                             <tr>
-                                <td><a href="#" class="text-danger delete-btn" data-toggle="modal" data-target="#deleteModal" data-url="{% url 'delete_contact' contact_item.id %}">
-                                    <i class="fa fa-trash" aria-hidden="true"></i> &nbspDelete</a></td>
+                                <td><a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal" data-url="{% url 'delete_contact' contact_item.id %}">Delete</a>&nbsp;&nbsp;&nbsp;<a href="{% url 'edit_contact' contact_item.id %}" class="btn btn-sm btn-info">Edit</a></td>
                                 <td>{{ contact_item.ClinStaff_Name }}</td>
-                                <td>{{ contact_item.ClinStaff_Telnum }}</td>
-                                <td>{{ contact_item.ClinStaff_EmailAdd }}</td>
+                                <td>{{ contact_item.ClinStaff_License }}</td>
+                                <td>{{ contact_item.ClinStaff_Designation }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -128,8 +128,11 @@
             </div>
         </div>
     </div>
-    {% include "includes/footer.html" %}
+    
 </div>
+
+
+
 {% endblock content %}
 
 <!-- Specific JS goes HERE -->
