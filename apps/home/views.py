@@ -537,7 +537,7 @@ def generate_gs(request, id):
 # for Quick search
 def search(request):
    query = request.GET.get('q')
-   items = Egasp_Data.objects.filter(Egasp_Id__icontains=query)
+   items = Egasp_Data.objects.filter(Egasp_Id__icontains=query).order_by('Egasp_Id')
    return render (request, 'home/search_results.html',{'items': items, 'query':query})
 
 
