@@ -21,8 +21,8 @@
     table {
         width: 100%;
         height: auto;
-        padding-top: 1.2px;
-        padding-bottom: 1.2px;
+        padding-top: 1px;
+        padding-bottom: 1px;
     
     }
     td{
@@ -48,7 +48,7 @@
         padding-left: 3.5px;
     }
     th{
-        padding-top: 3px;
+        padding-top: 1.5px;
         text-align: center; border: 0;
         
     }
@@ -310,6 +310,10 @@
             <td colspan="3" style="font-size: 8px;"><strong>4.3 Previously tested positive for gonorrhea:</strong> {{isolate.Prev_Test_Pos}}</td>
             <td colspan="2" style="font-size: 8px;"><strong>4.4 Date tested positive:</strong> {{isolate.Prev_Test_Pos_Date}}</td>
             <td colspan="3" style="font-size: 8px;"> <strong>4.5 Outcome of follow-up visit:</strong> {{isolate.Outcome_Of_Follow_Up_Visit}}</td>
+        </tr>
+        <tr style="border-top: 1px solid gray;">
+            <td colspan="4" style="font-size: 8px;"> <strong>4.6 Result of Initial test of cure:</strong> {{isolate.Result_Test_Cure_Initial}}</td>
+            <td colspan="4" style="font-size: 8px;"> <strong>4.7 Result of Follow-up test of cure:</strong> {{isolate.Result_Test_Cure_Followup}}</td>
         </tr>
         <tr>
             <td class="gray-background " colspan="8" ><strong style="font-size: 10.5px;">5. TREATMENT INFORMATION</strong></td>  
