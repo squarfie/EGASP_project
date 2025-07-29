@@ -30,6 +30,7 @@ from django.utils.timezone import now
 import csv
 from io import TextIOWrapper
 
+
 @login_required(login_url="/login/")
 def index(request):
     isolates = Egasp_Data.objects.all().order_by('-Date_of_Entry')
@@ -211,27 +212,50 @@ def crf_data(request):
 
 
 #Retrieve all data
+# def show_data(request):
+#     # Prefetch related objects to optimize database queries
+#     isolates = Egasp_Data.objects.prefetch_related(
+#         'antibiotic_entries'
+#     ).order_by('-Date_of_Entry')
+
+  
+  
+
+#     # Paginate the queryset to display 20 records per page
+#     paginator = Paginator(isolates, 20)
+#     page_number = request.GET.get('page')
+#     page_obj = paginator.get_page(page_number)
+
+#     # Render the template with paginated data
+#     return render(request, 'home/tables.html', {'page_obj': page_obj})
+
+    
+#     # normal view without paginators
+#     # return render(request, 'home/tables.html',{'isolates' :isolates}
+
 @login_required(login_url="/login/")
+#with sorting function
 def show_data(request):
-    # Prefetch related objects to optimize database queries
+    sort_by = request.GET.get('sort', 'Date_of_Entry')  # Default sort field
+    order = request.GET.get('order', 'desc')  # Default sort order
+
+    sort_field = f"-{sort_by}" if order == 'desc' else sort_by
+
     isolates = Egasp_Data.objects.prefetch_related(
         'antibiotic_entries'
-    ).order_by('-Date_of_Entry')
+    ).order_by(sort_field)
 
-
-    # Paginate the queryset to display 20 records per page
     paginator = Paginator(isolates, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Render the template with paginated data
-    return render(request, 'home/tables.html', {'page_obj': page_obj})
+    context = {
+        'page_obj': page_obj,
+        'current_sort': sort_by,
+        'current_order': order,
+    }
 
-    
-    # normal view without paginators
-    # return render(request, 'home/tables.html',{'isolates' :isolates}
-
-
+    return render(request, 'home/tables.html', context)
 
 
 @login_required(login_url="/login/")
@@ -290,7 +314,7 @@ def edit_data(request, id):
                     'disk_value': disk_value,
                     'mic_value': mic_value,
                 })
-
+                
                 # Get or create antibiotic entry
                 antibiotic_entry, created = AntibioticEntry.objects.update_or_create(
                     ab_idNumber_egasp=egasp_instance,
@@ -312,6 +336,12 @@ def edit_data(request, id):
                 )
 
                 antibiotic_entry.ab_breakpoints_id.set([entry.pk])
+                
+                # update RIS fields where disk or mic values are deleted during editing
+                if not disk_value and not mic_value:
+                    antibiotic_entry.ab_Disk_RIS = ''
+                    antibiotic_entry.ab_MIC_RIS = ''
+                    antibiotic_entry.save(update_fields=['ab_Disk_RIS', 'ab_MIC_RIS'])
 
             # Separate loop for Retest Data
             for retest in whonet_retest_data:
@@ -364,6 +394,12 @@ def edit_data(request, id):
                 )
 
                 retest_entry.ab_breakpoints_id.set([retest.pk])
+            
+            # update RIS fields where disk or mic values are deleted during editing
+                if not retest_disk_value and not retest_mic_value:
+                    retest_entry.ab_Retest_Disk_RIS = ''
+                    retest_entry.ab_Retest_MIC_RIS = ''
+                    retest_entry.save(update_fields=['ab_Retest_Disk_RIS', 'ab_Retest_MIC_RIS'])
 
             messages.success(request, 'Data updated successfully')
             return redirect('/show/')
@@ -931,7 +967,8 @@ def get_clinic_staff_details(request):
     if lab_staff:
         return JsonResponse({
             # 'ClinStaff_Telnum': str(lab_staff.ClinStaff_Telnum),  # Convert PhoneNumber to string
-            # 'ClinStaff_EmailAdd': lab_staff.ClinStaff_EmailAdd,
+            'ClinStaff_Contact': lab_staff.ClinStaff_Contact,  # Convert PhoneNumber to string
+            'ClinStaff_Email': lab_staff.ClinStaff_Email,
             'ClinStaff_License': lab_staff.ClinStaff_License,
             'ClinStaff_Designation': lab_staff.ClinStaff_Designation
         })

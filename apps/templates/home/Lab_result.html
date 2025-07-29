@@ -457,14 +457,14 @@
                     <td class="gray-background" colspan="8"><strong style="font-size: 10.5px;">9. MICROBIOLOGY CULTURE AND SUSCEPTIBILITY TESTING</strong></td>
                 </tr>
                 <tr>
-                    <td colspan="2"><strong>9.1 Date of positive culture:</strong></td>
-                    <td colspan="3"><strong>9.2 Microbiology culture result:</strong></td>
-                    <td colspan="3"><strong>9.3 Species Identification</strong></td>
+                    <td colspan="4"><strong>9.1 Date of positive culture:&nbsp;{{isolate.Positive_Culture_Date}}</strong></td>
+                    <td colspan="4"><strong>9.2 Microbiology culture result:&nbsp;{{isolate.Culture_Result}}</strong></td>
+
                 </tr>
                 <tr>
-                    <td colspan="2">{{isolate.Positive_Culture_Date}}</td>
-                    <td colspan="3">{{isolate.Culture_Result}}</td>
-                    <td colspan="3">{{isolate.Species_Identification}}</td>
+                    <td colspan="4"><strong>9.3 Species Identification:&nbsp;{{isolate.Species_Identification}}</strong></td>
+                    <td colspan="4"><strong>9.4 Other Species ID:&nbsp;{{isolate.Other_species_ID}}</strong></td>
+
                 </tr>
                 <tr>
                     <td class="gray-background" colspan="4"><strong style="font-size: 10.5px;">10. INITIAL ANTIMICROBIAL SUSCEPTIBILITY TESTING</strong></td>
@@ -546,19 +546,19 @@
                     <td colspan="4"><strong>Date Released:</strong>&nbsp;&nbsp;{{isolate.Date_Released}}</td>
                 </tr>
                 <tr>
-                    <td class="gray-background" colspan="8" style="font-size: 10.5px; text-align: center;"><strong >12. LABORATORY PERSONNEL PROVIDING INFORMATION</strong></td>
+                    <td class="gray-background" colspan="8" style="font-size: 10.5px; text-align: left;"><strong >12. PERFORMED BY</strong></td>
                 </tr>
                 <tr>
                     <td colspan="2"><strong>12.1 Laboratory Personel:</strong></td>
-                    <td colspan="2">{{isolate.Laboratory_Staff}}</td>
+                    <td colspan="2">{{isolate.Validator_Pers}}</td>
                     <td colspan="2"><strong>12.2 Email Address:</strong></td>
-                    <td colspan="2">{{isolate.ars_email}}</td>
+                    <td colspan="2">{{isolate.val_email}}</td>
                 </tr>
                 <tr>
                     <td colspan="2"><strong>12.3 Contact No.:</strong></td>
-                    <td colspan="2">{{isolate.ars_contact}}</td>
+                    <td colspan="2">{{isolate.val_contact}}</td>
                     <td colspan="2"><strong>12.4 Date Accomplished:</strong></td>
-                    <td colspan="2">{{isolate.Date_Accomplished_ARSP}}</td>
+                    <td colspan="2">{{isolate.Date_Validated_ARSP}}</td>
                 </tr>
                 <tr>
                     <td><strong>Notes:</strong></td>

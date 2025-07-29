@@ -60,6 +60,8 @@
                                 <th scope="col" class="sort" data-sort="ClinStaff_Name">Name</th>
                                 <th scope="col" class="sort" data-sort="ClinStaff_License">License No.</th>
                                 <th scope="col" class="sort" data-sort="ClinStaff_License">Designation</th>
+                                <th scope="col" class="sort" data-sort="ClinStaff_Contact">Contact No</th>
+                                <th scope="col" class="sort" data-sort="ClinStaff_Email">Email</th>
                                 
                             </tr>
                         </thead>
@@ -70,6 +72,8 @@
                                 <td>{{ contact_item.ClinStaff_Name }}</td>
                                 <td>{{ contact_item.ClinStaff_License }}</td>
                                 <td>{{ contact_item.ClinStaff_Designation }}</td>
+                                <td>{{ contact_item.ClinStaff_Contact }}</td>
+                                <td>{{ contact_item.ClinStaff_Email }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

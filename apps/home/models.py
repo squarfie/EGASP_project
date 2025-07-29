@@ -260,7 +260,7 @@ class Egasp_Data(models.Model):
         ('NAAT not performed','NG not performed'),
     )
     # DEMOGRAPHIC DATA
-    Date_of_Entry =models.DateTimeField(auto_now_add=True)
+    Date_of_Entry =models.DateTimeField(auto_now=True)
     ID_Number = models.CharField(max_length=100, blank=True, default="")
     Egasp_Id = models.CharField(max_length=25,blank=True,  )
     PTIDCode = models.CharField(max_length=100, blank=True)
@@ -438,14 +438,14 @@ class Egasp_Data(models.Model):
     Laboratory_Staff = models.CharField(max_length=100,blank=True, null=True,)
     Date_Accomplished_ARSP=models.DateField(blank=True, null=True)
     ars_notes = models.TextField(blank=True, max_length=255, null=True)
-    # ars_contact = models.CharField(max_length=27, blank=True, null=True)
-    # ars_email = models.EmailField(blank=True, null=True, validators=[EmailValidator()])
+    ars_contact = models.CharField(max_length=27, blank=True, null=True)
+    ars_email = models.EmailField(blank=True, null=True, validators=[EmailValidator()])
     ars_license = models.CharField(max_length=100,blank=True, null=True, default="")
     ars_designation = models.CharField(max_length=100,blank=True, null=True, default="")
     Validator_Pers = models.CharField(max_length=100,blank=True, null=True,)
     Date_Validated_ARSP=models.DateField(blank=True, null=True)
-    # val_contact = models.CharField(max_length=27,blank=True, null=True)
-    # val_email = models.EmailField(blank=True, null=True, validators=[EmailValidator()])
+    val_contact = models.CharField(max_length=27,blank=True, null=True)
+    val_email = models.EmailField(blank=True, null=True, validators=[EmailValidator()])
     val_license = models.CharField(max_length=100,blank=True, null=True, default="")
     val_designation =  models.CharField(max_length=100,blank=True, null=True, default="")
 
@@ -591,11 +591,13 @@ class Meta:
     db_table = "SpecimenTypeTable"
 
 
-# Address Book
+# Address Book used in Laboratory Personnel Providing Information
 class Clinic_Staff_Details(models.Model):
     ClinStaff_Name = models.CharField(max_length=100, blank=True, null=True)
     ClinStaff_License= models.CharField(max_length=100, blank=True, null=True)
     ClinStaff_Designation= models.CharField(max_length=150, blank=True, null=True)
+    ClinStaff_Email = models.EmailField(max_length=100, blank=True, null=True, validators=[EmailValidator()])
+    ClinStaff_Contact = models.CharField(max_length=27, blank=True, null=True)
 
     def __str__(self):
         return self.ClinStaff_Name if self.ClinStaff_Name else "Unnamed Staff"

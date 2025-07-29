@@ -92,6 +92,7 @@ def determine_ris(value, r_breakpoint, i_breakpoint, s_breakpoint, sdd_breakpoin
                     return "R"
                 else:
                     return "S"
+
         return None  # Return None if no valid interpretation can be made
 
 
@@ -134,7 +135,6 @@ def update_ris_interpretation(sender, instance, **kwargs):
     if retest_mic_ris and retest_mic_ris != instance.ab_Retest_MIC_RIS:
         instance.ab_Retest_MIC_RIS = retest_mic_ris
         updated_fields.append("ab_Retest_MIC_RIS")
-    
     
 
     # Only save if there are updates

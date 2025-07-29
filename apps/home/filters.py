@@ -1,7 +1,10 @@
 import django_filters
 from .models import Egasp_Data
+from django_filters import DateFromToRangeFilter
 
 class dataFilter(django_filters.FilterSet):
+    Date_of_Entry = DateFromToRangeFilter()
+    
     class Meta:
         model = Egasp_Data
         fields = {  'Egasp_Id': ['exact'], 
@@ -17,4 +20,4 @@ class dataFilter(django_filters.FilterSet):
                     'Sex':['icontains'],
                     'Date_of_Entry':['exact']
                     }
-        order_by =['Date_of_Entry']
+   

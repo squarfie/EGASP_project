@@ -166,7 +166,9 @@ label.form-control-label{
               <div class="col-5 text-right">
                 <a href="{% url 'show_data' %}" class="btn btn-sm btn-primary">View All</a>
                 <button type="submit" class="btn btn-sm btn-primary">Save Isolate</button>
-                <a href="{% url 'home' %}" class="btn btn-sm btn-primary">Search/Print</a>
+                {% if isolates %}
+                <a href="{% url 'generate_pdf' isolates.id %}" class="btn btn-sm btn-primary" target="_blank">Print Result</a>
+                {% endif%}
                 <a href="{% url 'add_breakpoints' %}" class="btn btn-warning btn-sm">Breakpoints</a>
               </div>
               </div>
@@ -1411,13 +1413,14 @@ label.form-control-label{
             </div>
           </div>
 
-            <div class="row">
+           <div class="row">
               <div class="col-lg-12">
                 <h6 class="heading-small mb-0" style="padding-bottom: 0; margin-bottom: 0;">LABORATORY PERSONNEL PROVIDING INFORMATION</h6>
               <hr class="border border-primary border-3 opacity-75 " style="margin-top: 0; padding-top: 0%;">
+    
                 <div class="card border-info mb-3">
                   <div class="card-body  text-info">
-                     <div class="col-lg-12">
+                    <div class="col-lg-12">
                       <div class="row">
                         
                         <div class="col-lg-3">
@@ -1449,6 +1452,29 @@ label.form-control-label{
                             </div>
                           </div>
                      </div>
+                     <div class="row">
+                      <div class="col-lg-6">
+                            <div class="form-group">
+                              <label class='form-control-label' for='ars_email'>Email Address</label> {{form.ars_email| append_attr:"class: form-control"|append_attr:"tabindex:312"}}
+                              
+                            </div>
+                          </div>
+                          <div class="col-lg-6">
+                            <div class="form-group">
+                              <label class='form-control-label' for='ars_contact'>Contact No</label> {{form.ars_contact| append_attr:"class: form-control"|append_attr:"tabindex:312"}}
+                              
+                            </div>
+                          </div>
+                     </div>
+                     </div>
+                      </div>
+                       </div>
+
+                <div class="card border-info mb-3">
+                  <div class="card-body  text-info">
+                    <div class="col-lg-12">
+                     
+
                         <div class="row">
                           <div class="col-lg-3">
                           <div class="form-group">                    
@@ -1479,33 +1505,38 @@ label.form-control-label{
                           </div>
                     </div> 
                     <div class="row">
+                      <div class="col-lg-6">
+                            <div class="form-group">
+                              <label class='form-control-label' for='val_email'>Email Address</label> {{form.val_email| append_attr:"class: form-control"|append_attr:"tabindex:312"}}
+                              
+                            </div>
+                          </div>
+                          <div class="col-lg-6">
+                            <div class="form-group">
+                              <label class='form-control-label' for='val_contact'>Contact No</label> {{form.val_contact| append_attr:"class: form-control"|append_attr:"tabindex:312"}}
+                              
+                            </div>
+                          </div>
+                     </div>
+
+                   
+                  </div> 
+
+                     </div> 
+                    </div> 
+                       <div class="row">
                           <div class="col-lg-8">
                             <div class="form-group">
                               <label class='form-control-label' for='ars_notes'>Notes</label> {{form.ars_notes| append_attr:"class: form-control"|append_attr:"tabindex:317"}}
                         </div> 
                       </div> 
                     </div>
-                  </div> 
-                  
-                     </div> 
-                    </div> 
+
+
                 </div>  
               </div>
             </div>
-
-
-
-
-                     </div> 
-                    </div> 
-                </div>  
-              </div>
-            </div>
-         
-
-
-
-
+ 
               </div> 
                <!--tabcontent 2-->
             </div> <!--card body-->
@@ -1840,11 +1871,15 @@ label.form-control-label{
           success: function (data) {
             $('#id_ars_license').val(data.ClinStaff_License);
             $('#id_ars_designation').val(data.ClinStaff_Designation);
+            $('#id_ars_contact').val(data.ClinStaff_Contact);
+            $('#id_ars_email').val(data.ClinStaff_Email);
           }
         });
       } else {
         $('#id_ars_license').val('');
         $('#id_ars_designation').val('');
+        $('#id_ars_contact').val('');
+        $('#id_ars_email').val('');
       }
     });
 
@@ -1860,11 +1895,15 @@ label.form-control-label{
           success: function (data) {
             $('#id_val_license').val(data.ClinStaff_License);
             $('#id_val_designation').val(data.ClinStaff_Designation);
+            $('#id_val_contact').val(data.ClinStaff_Contact);
+            $('#id_val_email').val(data.ClinStaff_Email);
           }
         });
       } else {
         $('#id_val_license').val('');
         $('#id_val_designation').val('');
+        $('#id_val_contact').val('');
+        $('#id_val_email').val('');
       }
     });
 
