@@ -64,6 +64,7 @@ class Egasp_Data(models.Model):
         ('Female', 'Female'),
         ('Transgender Male', 'Transgender Male'),
         ('Transgender Female', 'Transgender Female'),
+        ('Other', 'Other'),
         ('Unknown', 'Unknown')
     )
     Civil_StatusChoice=(
@@ -76,6 +77,7 @@ class Egasp_Data(models.Model):
     Nationality_Choice=(
         ('',''),
         ('Filipino', 'Filipino'),
+        ('Other', 'Other'),
         ('No Answer', 'No Answer'))
     
     TravelHistory_Choice=(
@@ -177,6 +179,7 @@ class Egasp_Data(models.Model):
         ('CFM PO 800mg', 'Cefixime PO 800mg'),
         ('AZM PO 1g', 'Azithromycin PO 1g'),
         ('AZM PO 2g', 'Azithromycin PO 2g'),
+        ('Other', 'Other'),
         ('Unknown', 'Unknown')
     )
     Secondary_Antibiotics=(
@@ -185,6 +188,7 @@ class Egasp_Data(models.Model):
         ('AZM PO 2g', 'Azithromycin PO 2g'),
         ('DOX PO 100mg', 'Doxycycline PO 100mg'),
         ('TCY PO 500mg', 'Tetracycline PO 500mg'),
+        ('Other', 'Other'),
         ('Unknown', 'Unknown')
     )
 
