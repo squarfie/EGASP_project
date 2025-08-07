@@ -2,6 +2,9 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import EmailValidator
+from django.core.exceptions import ValidationError
+
+
 
 
 # Create your models here.
@@ -33,10 +36,10 @@ class LocationUpload(models.Model):
 class Egasp_Data(models.Model):
     Common_Choices = (
         ('',''),
-        ('n/a','n/a'),
         ('Yes', 'Yes'),
         ('No', 'No'),
-        ('No Answer', 'No Answer')
+        ('No Answer', 'No Answer'),
+        ('n/a','n/a')
     )
     SpeciesChoices =(
         ('n/a','n/a'),
@@ -146,7 +149,9 @@ class Egasp_Data(models.Model):
         ('Positive','Positive'),
         ('Negative','Negative'),
         ('No TOC Performed', 'No TOC Performed'),
-        ('No Answer', 'No Answer')
+        ('No Answer', 'No Answer'),
+        ('N/A', 'N/A')
+        
     )
     NoTOC_ResultofTest=(
         ('',''),
@@ -266,7 +271,7 @@ class Egasp_Data(models.Model):
     # DEMOGRAPHIC DATA
     Date_of_Entry =models.DateTimeField(auto_now=True)
     ID_Number = models.CharField(max_length=100, blank=True, default="")
-    Egasp_Id = models.CharField(max_length=25,blank=True,  )
+    Egasp_Id = models.CharField(max_length=25,blank=True, unique=True )
     PTIDCode = models.CharField(max_length=100, blank=True)
     Laboratory = models.CharField(max_length=100,blank=True,default='Research Institute for Tropical Medicine')
     Clinic = models.CharField(max_length=100,blank=True,)
@@ -462,6 +467,11 @@ class Egasp_Data(models.Model):
     def __str__(self):
         return f"Current: {self.Current_City}, {self.Current_Province} | Permanent: {self.Permanent_City}, {self.Permanent_Province}"
 
+    # to dissallow duplicates
+    def clean(self):
+        if self.Egasp_Id:
+            if Egasp_Data.objects.filter(Egasp_Id=self.Egasp_Id).exclude(pk=self.pk).exists():
+                raise ValidationError({'Egasp_Id': 'Egasp_Id must be unique.'})
     
 class Meta:
     db_table ="Egasp_Data"
