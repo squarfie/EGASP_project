@@ -204,6 +204,7 @@ class Egasp_Data(models.Model):
         ('Dermal','Dermal'),
         ('Suppository', 'Suppository'),
         ('No Answer', 'No Answer'),
+        ('N/A', 'N/A'),
     )
     Pus_cellsChoice=(
         ('n/a','n/a'),
