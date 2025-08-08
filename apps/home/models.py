@@ -230,6 +230,7 @@ class Egasp_Data(models.Model):
         ('Contaminated','Contaminated'),
         ('Non-viable','Non-viable'),
         ('Improperly Transported','Improperly Transported'),
+        ('N/A','N/A'),
     )
     Diagnosis_Choice=(
         ('',''),
