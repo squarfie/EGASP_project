@@ -5,8 +5,6 @@ from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
 
 
-
-
 # Create your models here.
 #For province and Cities
 
@@ -151,7 +149,6 @@ class Egasp_Data(models.Model):
         ('No TOC Performed', 'No TOC Performed'),
         ('No Answer', 'No Answer'),
         ('N/A', 'N/A')
-        
     )
     NoTOC_ResultofTest=(
         ('',''),
@@ -185,7 +182,7 @@ class Egasp_Data(models.Model):
         ('AZM PO 1g', 'Azithromycin PO 1g'),
         ('AZM PO 2g', 'Azithromycin PO 2g'),
         ('Other', 'Other'),
-        ('Unknown', 'Unknown')
+        ('Unknown', 'Unknown'),
     )
     Secondary_Antibiotics=(
         ('None','None'),
@@ -207,6 +204,7 @@ class Egasp_Data(models.Model):
         ('N/A', 'N/A'),
     )
     Pus_cellsChoice=(
+        ('',''),
         ('n/a','n/a'),
         ('Negative','Negative'),
         ('Rare','Rare'),
@@ -255,6 +253,7 @@ class Egasp_Data(models.Model):
     
     Country_Choice=(
         ('Philippines','Philippines'),
+        ('Other','Other'),
     )
     NAATng_Choice=(
         ('n/a','n/a'),
@@ -269,6 +268,11 @@ class Egasp_Data(models.Model):
         ('Chlamydia non Detected','Chlamydia non Detected'),
         ('Invalid','Invalid'),
         ('NAAT not performed','NG not performed'),
+    )
+
+    Country_Choice=(
+        ('Philippines','Philippines'),
+        ('Other','Other'),
     )
     # DEMOGRAPHIC DATA
     Date_of_Entry =models.DateTimeField(auto_now=True)
@@ -296,11 +300,11 @@ class Egasp_Data(models.Model):
     Civil_Status = models.CharField(max_length=100, choices=Civil_StatusChoice, default="")
     Civil_Status_Other = models.CharField(max_length=100, blank=True, default="n/a")
     Current_Province = models.CharField(max_length=100, blank=True, null=True)
-    Current_City = models.CharField(max_length=100, blank=True, null=True)
+    Current_City = models.CharField(max_length=100, blank=True, null=True,)
     Current_Country =models.CharField(max_length=100, blank=True, choices=Country_Choice, default='Philippines')
     PermAdd_same_CurrAdd = models.BooleanField(default=False)
-    Permanent_Province = models.CharField(max_length=100, blank=True, null=True)
-    Permanent_City = models.CharField(max_length=100, blank=True, null=True)
+    Permanent_Province = models.CharField(max_length=100, blank=True,  default="*None")
+    Permanent_City = models.CharField(max_length=100, blank=True, default="*None")
     Permanent_Country = models.CharField(max_length=100, blank=True, choices=Country_Choice, default='Philippines')
     Other_Country = models.CharField(max_length=100, blank=True, default='n/a')
     Nationality = models.CharField(max_length=100, choices=Nationality_Choice, default="")
@@ -409,15 +413,24 @@ class Egasp_Data(models.Model):
     Specimen_Quality = models.CharField(max_length=100, choices=Sp_QualChoice, default="")
     Date_Of_Gram_Stain = models.DateField( null=True, blank=True, )
     Diagnosis_At_This_Visit = models.CharField(max_length=100, choices=Diagnosis_Choice, default="")
-    Gram_Neg_Intracellular = models.CharField(max_length=100, choices=Pus_cellsChoice, default="")
-    Gram_Neg_Extracellular = models.CharField(max_length=100, choices=Pus_cellsChoice,default="")
+    Gram_Neg_Intracellular = models.CharField(max_length=100, choices=Pus_cellsChoice, default="n/a")
+    Gram_Neg_Extracellular = models.CharField(max_length=100, choices=Pus_cellsChoice,default="n/a")
     Gs_Presence_Of_Pus_Cells = models.CharField(max_length=100, choices=Common_Choices, default="")
     Presence_GN_Intracellular=models.CharField(max_length=100,choices=Common_Choices, default="")
     Presence_GN_Extracellular=models.CharField(max_length=100, choices=Common_Choices, default="")
-    GS_Pus_Cells=models.CharField(max_length=100, choices=Pus_cellsChoice, default="")
-    Epithelial_Cells = models.CharField(max_length=100, choices=Pus_cellsChoice, default="")
+    GS_Pus_Cells=models.CharField(max_length=100, choices=Pus_cellsChoice, default="n/a")
+    Epithelial_Cells = models.CharField(max_length=100, choices=Pus_cellsChoice, default="n/a")
     GS_Date_Released = models.DateField( null= True, blank=True, )
-    GS_Others = models.TextField(blank=True, null=True, max_length=255 )
+    
+    GS_Others = models.CharField(max_length=255, blank=True, default="" )
+    GS_Other_sp = models.CharField(max_length=100, choices=Pus_cellsChoice, default="")
+    
+    GS_Others2 = models.CharField(max_length=255, blank=True, default="" )
+    GS_Other_sp2 = models.CharField(max_length=100, choices=Pus_cellsChoice, default="")
+    
+    GS_Others3 = models.CharField(max_length=255, blank=True, default="" )
+    GS_Other_sp3 = models.CharField(max_length=100, choices=Pus_cellsChoice, default="")
+    
     GS_Negative=models.CharField(max_length=100, choices=Common_Choices, )
     Gs_Gram_neg_diplococcus=models.CharField(max_length=100, choices=Common_Choices, default="")
     Gs_NoGram_neg_diplococcus=models.CharField(max_length=100,choices=Common_Choices, default="")
@@ -427,6 +440,7 @@ class Egasp_Data(models.Model):
     Culture_Result = models.CharField(max_length=100, choices=CultureResult_Choice, default="n/a")
     Growth = models.CharField(max_length=100,blank=True,)
     Growth_span = models.CharField(max_length=255, blank=True)
+    Growth_span_other = models.CharField(max_length=255, blank=True)
     
     Species_Identification = models.CharField(max_length=100, choices=SpeciesChoices, default="n/a")
     Other_species_ID=models.CharField(max_length=100,blank=True,default="n/a" )
@@ -469,12 +483,16 @@ class Egasp_Data(models.Model):
     def __str__(self):
         return f"Current: {self.Current_City}, {self.Current_Province} | Permanent: {self.Permanent_City}, {self.Permanent_Province}"
 
+
+
+
     # to dissallow duplicates
     def clean(self):
         if self.Egasp_Id:
             if Egasp_Data.objects.filter(Egasp_Id=self.Egasp_Id).exclude(pk=self.pk).exists():
                 raise ValidationError({'Egasp_Id': 'Egasp_Id must be unique.'})
     
+
 class Meta:
     db_table ="Egasp_Data"
 

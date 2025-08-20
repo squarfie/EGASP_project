@@ -101,8 +101,10 @@ class egasp_Form(forms.ModelForm):
             'Date_Released' :forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'MM/DD/YYYY'}),
             'Date_stocked' :forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'MM/DD/YYYY'}),
             'Notes': forms.Textarea(attrs={'class': 'textarea form-control', 'rows': '3'}),
+            'Gs_Others': forms.Textarea(attrs={'class': 'textarea form-control', 'rows': '1'}),
+            'Gs_Others2': forms.Textarea(attrs={'class': 'textarea form-control', 'rows': '1'}),
+            'Gs_Others3': forms.Textarea(attrs={'class': 'textarea form-control', 'rows': '1'}),
             'ars_notes': forms.Textarea(attrs={'class': 'textarea form-control', 'rows': '3'}),
-            'GS_Others': forms.Textarea(attrs={'class': 'textarea form-control', 'rows': '3'}),
             'Azm_Nd': forms.NumberInput(attrs={'class': 'form-control-sm', 'style': 'width: 50px; font-size: 12px', 'placeholder': 'azm_nd'}),
             'Azm_Nd_Ris_Full': forms.TextInput(attrs={'class': 'form-control-sm', 'style': 'width: 50px; font-size: 12px', 'placeholder': 'RIS_nd'}),
             'Cfm_Nd': forms.NumberInput(attrs={'class': 'form-control-sm', 'style': 'width: 50px; font-size: 12px', 'placeholder': 'cfm_nd'}),
@@ -297,6 +299,10 @@ class egasp_Form(forms.ModelForm):
             self.fields['val_license'].required=False
             self.fields['ars_designation'].required=False
             self.fields['val_designation'].required=False
+            self.fields['GS_Other_sp'].required=False
+            self.fields['GS_Other_sp2'].required=False
+            self.fields['GS_Other_sp3'].required=False
+    
 
 
              # Populate cities on edit mode (instance exists and has provinces set)
