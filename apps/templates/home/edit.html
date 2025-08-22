@@ -1978,60 +1978,56 @@ label.form-control-label{
 </script>
 
 
-
 <!-- <script>
-  $(document).ready(function () {
-    const provinceSelect = $('#id_Current_Province');
-    const citySelect = $('#id_Current_City');
-    const permanentProvince = $('#id_Permanent_Province');
-    const permanentCity = $('#id_Permanent_City');
+$(document).ready(function () {
+  const provinceSelect = $('#id_Current_Province');
+  const citySelect = $('#id_Current_City');
+  const permanentProvince = $('#id_Permanent_Province');
+  const permanentCity = $('#id_Permanent_City');
 
-    // Function to load cities based on selected province
-    function loadCities(provinceId, cityField, selectedCityId = null) {
-      if (!provinceId) return;
+  function loadCities(provinceId, cityField, selectedCityId = null) {
+    if (!provinceId) return;
 
-      $.ajax({
-        url: "{% url 'get_cities_by_province' %}",  // Django URL that returns cities JSON
-        data: { 'province_id': provinceId },
-        success: function (data) {
-          cityField.empty();  // Clear city options
+    $.ajax({
+      url: "{% url 'get_cities_by_province' %}",
+      data: { 'province_id': provinceId },
+      success: function (data) {
+        cityField.empty();
 
-          $.each(data.cities, function (index, city) {
-            const option = $('<option>').val(city.id).text(city.cityname);
-            // Preselect if this city matches the selectedCityId
-            if (String(city.id) === String(selectedCityId)) {
-              option.prop('selected', true);
-            }
-            cityField.append(option);
-          });
-        }
-      });
-    }
-
-    // --- Province change events ---
-    provinceSelect.change(function () {
-      const provId = $(this).val();
-      loadCities(provId, citySelect);  // No selectedCityId = reset
+        $.each(data.cities, function (index, city) {
+          const option = $('<option>').val(city.id).text(city.cityname);
+          if (String(city.id) === String(selectedCityId)) {
+            option.prop('selected', true);
+          }
+          cityField.append(option);
+        });
+      }
     });
+  }
 
-    permanentProvince.change(function () {
-      const provId = $(this).val();
-      loadCities(provId, permanentCity);
-    });
-
-    // --- Initial load for edit mode ---
-    const initProvinceId = provinceSelect.val();
-    const initCityId = citySelect.val();
-    if (initProvinceId && initCityId) {
-      loadCities(initProvinceId, citySelect, initCityId);
-    }
-
-    const initPermProv = permanentProvince.val();
-    const initPermCity = permanentCity.val();
-    if (initPermProv && initPermCity) {
-      loadCities(initPermProv, permanentCity, initPermCity);
-    }
+  // Province change events
+  provinceSelect.change(function () {
+    loadCities($(this).val(), citySelect);
   });
+
+  permanentProvince.change(function () {
+    loadCities($(this).val(), permanentCity);
+  });
+
+  // --- Initial load for edit mode ---
+  const initProvinceId = provinceSelect.val();
+  const initCityId = citySelect.data('selected'); // ✅ pull from data attribute
+  if (initProvinceId && initCityId) {
+    loadCities(initProvinceId, citySelect, initCityId);
+  }
+
+  const initPermProv = permanentProvince.val();
+  const initPermCity = permanentCity.data('selected'); // ✅ pull from data attribute
+  if (initPermProv && initPermCity) {
+    loadCities(initPermProv, permanentCity, initPermCity);
+  }
+});
+
 </script> -->
 
 

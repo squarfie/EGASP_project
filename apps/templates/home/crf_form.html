@@ -1611,7 +1611,7 @@ label.form-control-label{
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-
+<!-- copy current address to permanent address -->
 <script>
   document.getElementById('id_PermAdd_same_CurrAdd').addEventListener('change', function () {
       const isChecked = this.checked;
@@ -1631,6 +1631,8 @@ label.form-control-label{
       }
   });
 </script>
+
+<!-- #calculate age -->
 <script>
   function calculateAge() {
       const birthInput = document.getElementById('id_Birthdate').value;
@@ -1898,6 +1900,7 @@ label.form-control-label{
       var provinceId = $(this).val();
       var citySelect = $('#id_Current_City');
 
+
       citySelect.empty();  // Clear the current options
 
       if (provinceId) {
@@ -1907,27 +1910,152 @@ label.form-control-label{
             'province_id': provinceId
           },
           success: function (data) {
-            citySelect.append($('<option>').text('---------').attr('value', ''));
+            citySelect.append($('<option>').text('*None').attr('value', ''));
+
             $.each(data.cities, function (index, city) {
               citySelect.append($('<option>').text(city.cityname).attr('value', city.id));
+
             });
           }
         });
       } else {
-        citySelect.append($('<option>').text('---------').attr('value', ''));
+        citySelect.append($('<option>').text('*None').attr('value', ''));
+
       }
     });
   });
 </script> -->
 
 <!-- <script>
-document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("id_Permanent_City").value = "None";
-    document.getElementById("id_Permanent_Province").value = "None";
-});
+  $(document).ready(function () {
+    $('#id_Permanent_Province').change(function () {
+      var provinceId = $(this).val();
+      var citySelect = $('#id_Permanent_City');
 
+
+      citySelect.empty();  // Clear the current options
+
+      if (provinceId) {
+        $.ajax({
+          url: "{% url 'get_cities_by_province' %}",
+          data: {
+            'province_id': provinceId
+          },
+          success: function (data) {
+            citySelect.append($('<option>').text('*None').attr('value', ''));
+
+            $.each(data.cities, function (index, city) {
+              citySelect.append($('<option>').text(city.cityname).attr('value', city.id));
+
+            });
+          }
+        });
+      } else {
+        citySelect.append($('<option>').text('*None').attr('value', ''));
+
+      }
+    });
+  });
 </script> -->
 
+
+
+<!-- <script>
+$(function () {
+  const $curCountry = $('#id_Current_Country');
+  const $curProv    = $('#id_Current_Province');
+  const $curCity    = $('#id_Current_City');
+
+  const $permCountry = $('#id_Permanent_Country');
+  const $permProv    = $('#id_Permanent_Province');
+  const $permCity    = $('#id_Permanent_City');
+
+  // Cache original province option lists so we can restore them
+  const curProvOptions  = $curProv.html();
+  const permProvOptions = $permProv.html();
+
+  function setNone($select) {
+    $select.empty().append($('<option>', { value: '', text: '*None' }));
+  }
+
+  function handleCountryChange($country, $prov, $city, originalProvHtml) {
+    const val = ($country.val() || '').toLowerCase();
+
+    if (val === 'other') {
+      // Show "*None" and disable both
+      setNone($prov).prop('disabled', true);
+      setNone($city).prop('disabled', true);
+    } else {
+      // Restore provinces and re-enable
+      $prov.html(originalProvHtml).prop('disabled', false);
+      $city.empty().append($('<option>', { value: '', text: '*None' })).prop('disabled', false);
+
+      // If a province is already selected, trigger change to load cities
+      if ($prov.val()) $prov.trigger('change');
+    }
+  }
+
+  // Existing province → city loader (your working AJAX)
+  function loadCities($prov, $city) {
+    const provinceId = $prov.val();
+    $city.empty().append($('<option>', { value: '', text: '*None' }));
+    if (!provinceId) return;
+
+    $.ajax({
+      url: "{% url 'get_cities_by_province' %}",
+      data: { province_id: provinceId },
+      success: function (data) {
+        $.each(data.cities, function (_, city) {
+          $city.append($('<option>', { value: city.id, text: city.cityname }));
+        });
+      }
+    });
+  }
+
+  // Bind province -> city
+  $curProv.on('change',  function(){ loadCities($curProv,  $curCity);  });
+  $permProv.on('change', function(){ loadCities($permProv, $permCity); });
+
+  // Bind country -> (province, city)
+  $curCountry.on('change',  function(){ handleCountryChange($curCountry,  $curProv,  $curCity,  curProvOptions);  });
+  $permCountry.on('change', function(){ handleCountryChange($permCountry, $permProv, $permCity, permProvOptions); });
+
+  // Initialize on page load (covers pre-filled forms)
+  handleCountryChange($curCountry,  $curProv,  $curCity,  curProvOptions);
+  handleCountryChange($permCountry, $permProv, $permCity, permProvOptions);
+});
+</script>
+
+
+
+<script>
+  document.getElementById('id_PermAdd_same_CurrAdd').addEventListener('change', function () {
+      const isChecked = this.checked;
+
+      const currentProvince = document.getElementById('id_Current_Province').value;
+      const currentCity = document.getElementById('id_Current_City').value;
+
+      const permanentProvinceField = document.getElementById('id_Permanent_Province');
+      const permanentCityField = document.getElementById('id_Permanent_City');
+
+      if (isChecked) {
+          // Copy province first
+          permanentProvinceField.value = currentProvince;
+
+          // Trigger change event on permanentProvinceField to reload city options
+          let event = new Event('change', { bubbles: true });
+          permanentProvinceField.dispatchEvent(event);
+
+          // Delay setting the city until the city options are populated
+          setTimeout(() => {
+              permanentCityField.value = currentCity;
+          }, 300); // adjust delay if needed (depends on your population script)
+      } else {
+          permanentProvinceField.value = '*None';
+          permanentCityField.value = '*None';
+      }
+  });
+</script> -->
 
 {% endblock javascripts %}
 

@@ -1052,24 +1052,18 @@ def add_location(request, id=None):
     return render(request, "home/Add_location.html", {"form": form, "provinces": provinces, "upload_form": upload_form})
 
 @login_required(login_url="/login/")
-def get_cities_by_province(request):
-    province_id = request.GET.get('province_id')
-    cities = []
-    if province_id and province_id.isdigit():
-        cities = City.objects.filter(province_id=province_id).order_by('cityname').values('id', 'cityname')
-    return JsonResponse({'cities': list(cities)})
-
-
 # def get_cities_by_province(request):
 #     province_id = request.GET.get('province_id')
+#     cities = []
+#     if province_id and province_id.isdigit():
+#         cities = City.objects.filter(province_id=province_id).order_by('cityname').values('id', 'cityname')
+#     return JsonResponse({'cities': list(cities)})
 
-#     if not province_id or not province_id.isdigit():
-#         return JsonResponse({'cities': []})
-
-#     cities = City.objects.filter(province_id=int(province_id)).order_by('cityname')
-#     city_list = [{'id': city.id, 'cityname': city.cityname} for city in cities]
-
-#     return JsonResponse({'cities': city_list})
+#used for grouping cities
+def get_cities_by_province(request):
+    province_id = request.GET.get('province_id')
+    cities = City.objects.filter(province_id=province_id).values('id', 'cityname')
+    return JsonResponse({'cities': list(cities)})
 
 
 @login_required(login_url="/login/")

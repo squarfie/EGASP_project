@@ -54,7 +54,7 @@ class egasp_Form(forms.ModelForm):
             queryset=Province.objects.all(),
             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
             empty_label=None,
-            to_field_name='provincename',
+            to_field_name='provincename', 
             required=False,
             
         )
@@ -305,7 +305,7 @@ class egasp_Form(forms.ModelForm):
     
 
 
-             # Populate cities on edit mode (instance exists and has provinces set)
+            # Populate cities on edit mode (instance exists and has provinces set)
             # if self.instance and self.instance.Current_Province:
             #     self.fields['Current_City'].queryset = City.objects.filter(
             #         province=self.instance.Current_Province
@@ -315,6 +315,7 @@ class egasp_Form(forms.ModelForm):
             #     self.fields['Permanent_City'].queryset = City.objects.filter(
             #         province=self.instance.Permanent_Province
             # )
+
 
 def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
