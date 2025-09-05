@@ -1756,56 +1756,55 @@ label.form-control-label{
 </script>
 
 
+
 <!-- for all none fields -->
-
-
 <script>
-  // change field.disable = true when you do not want the field to be edited though this will not automatically set the value into "no" to the other fields
-  document.addEventListener("DOMContentLoaded", function () {
+  // Utility to safely set dropdown value
+  function setDropdownValue(field, value) {
+    if (!field || field.tagName !== "SELECT") return;
 
-    function setDropdownValue(field, value) {
-      if (!field || field.tagName !== "SELECT") return;
-
-      const hasOption = Array.from(field.options).some(opt => opt.value === value);
-      if (hasOption) {
-        field.value = value;
-        field.dispatchEvent(new Event('change'));
-      } else {
-        console.warn(`Option "${value}" not found in <select> #${field.id}`);
-      }
+    const hasOption = Array.from(field.options).some(opt => opt.value === value);
+    if (hasOption) {
+      field.value = value;
+      field.dispatchEvent(new Event("change"));
+    } else {
+      console.warn(`Option "${value}" not found in <select> #${field.id}`);
     }
+  }
 
-    function setupDisableLogic(triggerId, fieldIds, disableValue = "Yes", defaultValue = "No") {
-      const triggerField = document.getElementById(triggerId);
-      const targetFields = fieldIds.map(id => document.getElementById(id));
+  // Generic setup function
+  function setupDisableLogic(triggerId, fieldIds, disableValue = "Yes", defaultValue = "No") {
+    const triggerField = document.getElementById(triggerId);
+    const targetFields = fieldIds.map(id => document.getElementById(id));
 
-      function toggleFields() {
-        const shouldDisable = triggerField && triggerField.value === disableValue;
+    function toggleFields() {
+      const shouldDisable = triggerField && triggerField.value === disableValue;
 
-        targetFields.forEach(field => {
-          if (!field || field.tagName !== "SELECT") return;
+      targetFields.forEach(field => {
+        if (!field || field.tagName !== "SELECT") return;
 
-          if (shouldDisable) {
-            setDropdownValue(field, defaultValue);  // Set to "No"
-            field.disabled = false;
-          } else {
-            field.disabled = false;
-            if (field.value === defaultValue) {
-              // setDropdownValue(field, "");  // Reset to blank
-            }
+        if (shouldDisable) {
+          setDropdownValue(field, defaultValue);  // Force default
+          field.disabled = false; // still editable if needed
+        } else {
+          field.disabled = false;
+          if (field.value === defaultValue) {
+            setDropdownValue(field, "");  // Reset to blank
           }
-        });
-      }
-
-      // Delay ensures Django pre-filled values are available
-      setTimeout(toggleFields, 100);
-
-      if (triggerField) {
-        triggerField.addEventListener("change", toggleFields);
-      }
+        }
+      });
     }
 
-    // STIs - Disable all other dropdowns if "None" is selected
+    // Run once after load
+    setTimeout(toggleFields, 100);
+
+    if (triggerField) {
+      triggerField.addEventListener("change", toggleFields);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // ------------------ STIs ------------------
     setupDisableLogic("id_Sti_None", [
       "id_Sti_Hiv",
       "id_Sti_Hepatitis_B",
@@ -1819,16 +1818,16 @@ label.form-control-label{
       "id_Sti_Trichomoniasis",
       "id_Sti_Mycoplasma_genitalium",
       "id_Sti_Lymphogranuloma"
-    ]);
+    ], "Yes", "No");
 
-    // Antibiotic Use - Disable others if "None" is selected
+    // ------------------ Antibiotic Use ------------------
     setupDisableLogic("id_Abx_Use_None", [
       "id_Abx_Use_Prescribed",
       "id_Abx_Use_Self_Medicated",
       "id_Abx_Use_Other"
-    ]);
+    ], "Yes", "No");
 
-    // Symptoms - Disable others if "No" is selected
+    // ------------------ Symptoms ------------------
     setupDisableLogic("id_Symp_No", [
       "id_Symp_Discharge_Urethra",
       "id_Symp_Discharge_Vagina",
@@ -1839,9 +1838,19 @@ label.form-control-label{
       "id_Symp_Painful_Urination",
       "id_Symp_Painful_Intercourse",
       "id_Symp_Rectal_Pain"
-    ]);
+    ], "Yes", "No");
+
+    // ------------------ Route of Administration ------------------
+    setupDisableLogic("id_Abx_Use_None", [
+      "id_Route_Oral",
+      "id_Route_Injectable_IV",
+      "id_Route_Dermal",
+      "id_Route_Suppository",
+      "id_Route_Other"
+    ], "Yes", "n/a");
   });
 </script>
+
 
 
 <script>

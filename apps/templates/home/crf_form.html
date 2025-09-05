@@ -1679,7 +1679,7 @@ label.form-control-label{
 
 
 <!-- for all none fields -->
-<script>
+<!-- <script>
   // change field.disable = true when you do not want the field to be edited though this will not automatically set the value into "no" to the other fields
   document.addEventListener("DOMContentLoaded", function () {
 
@@ -1761,7 +1761,104 @@ label.form-control-label{
       "id_Symp_Rectal_Pain"
     ]);
   });
+</script> -->
+
+
+
+<script>
+  // Utility to safely set dropdown value
+  function setDropdownValue(field, value) {
+    if (!field || field.tagName !== "SELECT") return;
+
+    const hasOption = Array.from(field.options).some(opt => opt.value === value);
+    if (hasOption) {
+      field.value = value;
+      field.dispatchEvent(new Event("change"));
+    } else {
+      console.warn(`Option "${value}" not found in <select> #${field.id}`);
+    }
+  }
+
+  // Generic setup function
+  function setupDisableLogic(triggerId, fieldIds, disableValue = "Yes", defaultValue = "No") {
+    const triggerField = document.getElementById(triggerId);
+    const targetFields = fieldIds.map(id => document.getElementById(id));
+
+    function toggleFields() {
+      const shouldDisable = triggerField && triggerField.value === disableValue;
+
+      targetFields.forEach(field => {
+        if (!field || field.tagName !== "SELECT") return;
+
+        if (shouldDisable) {
+          setDropdownValue(field, defaultValue);  // Force default
+          field.disabled = false; // still editable if needed
+        } else {
+          field.disabled = false;
+          if (field.value === defaultValue) {
+            setDropdownValue(field, "");  // Reset to blank
+          }
+        }
+      });
+    }
+
+    // Run once after load
+    setTimeout(toggleFields, 100);
+
+    if (triggerField) {
+      triggerField.addEventListener("change", toggleFields);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // ------------------ STIs ------------------
+    setupDisableLogic("id_Sti_None", [
+      "id_Sti_Hiv",
+      "id_Sti_Hepatitis_B",
+      "id_Sti_Hepatitis_C",
+      "id_Sti_Syphilis",
+      "id_Sti_Chlamydia",
+      "id_Sti_NGI",
+      "id_Sti_Anogenital_Warts",
+      "id_Sti_Genital_Ulcer",
+      "id_Sti_Herpes",
+      "id_Sti_Trichomoniasis",
+      "id_Sti_Mycoplasma_genitalium",
+      "id_Sti_Lymphogranuloma"
+    ], "Yes", "No");
+
+    // ------------------ Antibiotic Use ------------------
+    setupDisableLogic("id_Abx_Use_None", [
+      "id_Abx_Use_Prescribed",
+      "id_Abx_Use_Self_Medicated",
+      "id_Abx_Use_Other"
+    ], "Yes", "No");
+
+    // ------------------ Symptoms ------------------
+    setupDisableLogic("id_Symp_No", [
+      "id_Symp_Discharge_Urethra",
+      "id_Symp_Discharge_Vagina",
+      "id_Symp_Discharge_Anus",
+      "id_Symp_Discharge_Oropharyngeal",
+      "id_Symp_Pain_Lower_Abdomen",
+      "id_Symp_Tender_Testicles",
+      "id_Symp_Painful_Urination",
+      "id_Symp_Painful_Intercourse",
+      "id_Symp_Rectal_Pain"
+    ], "Yes", "No");
+
+    // ------------------ Route of Administration ------------------
+    setupDisableLogic("id_Abx_Use_None", [
+      "id_Route_Oral",
+      "id_Route_Injectable_IV",
+      "id_Route_Dermal",
+      "id_Route_Suppository",
+      "id_Route_Other"
+    ], "Yes", "n/a");
+  });
 </script>
+
+
 
 
 <script>
