@@ -937,7 +937,7 @@ def delete_contact(request, id):
     return redirect('contact_view')
 
 
-# Edit an existing contact
+# for LAB PERSONNEL
 def edit_contact(request, pk):
     contact = get_object_or_404(Clinic_Staff_Details, pk=pk)
 
@@ -952,11 +952,83 @@ def edit_contact(request, pk):
     return render(request, 'home/Contact_Edit.html', {'form': form, 'contact': contact})
 
 
-
 @login_required(login_url="/login/")
 def contact_view(request):
     contact_items = Clinic_Staff_Details.objects.all()  # Fetch all contact data
     return render(request, 'home/Contact_View.html', {'contact_items': contact_items})
+
+
+## FOR CLINIC PERSONNEL
+
+def add_clin_pers(request):
+    if request.method == "POST":
+        form = Clinic_Pers_Form(request.POST)  
+        if form.is_valid():           
+            form.save()  
+            messages.success(request, 'Added Successfully')
+            return redirect('view_clin_pers')  # Redirect after successful POST
+            
+            
+        else:
+            messages.error(request, 'Error / Adding Unsuccessful')
+            print(form.errors)
+    else:
+        form = Clinic_Pers_Form()  # Show an empty form for GET request
+
+    # Fetch clinic data from the database for dropdown options
+    contacts = Clinic_Pers_Other.objects.all()
+    
+    return render(request, 'home/Clinic_Staff.html', {'form': form, 'contacts': contacts})
+
+
+@login_required(login_url="/login/")
+def view_clin_pers(request):
+    clin_staff_items = Clinic_Pers_Other.objects.all()  # Fetch all contact data
+    return render(request, 'home/Clinic_Staff_View.html', {'clin_staff_items': clin_staff_items})
+
+
+@login_required(login_url="/login/")
+def edit_clin_pers(request, pk):
+    clinstaff = get_object_or_404(Clinic_Pers_Other, pk=pk)
+
+    if request.method == 'POST':
+        form = Clinic_Pers_Form(request.POST, instance=clinstaff)  # Pre-fill with existing data
+        if form.is_valid():
+            form.save()
+            return redirect('view_clin_pers')  # Redirect after saving
+    else:
+        form = Clinic_Pers_Form(instance=clinstaff)  # Load existing data
+    
+    return render(request, 'home/Clinic_Staff_Edit.html', {'form': form, 'clinstaff': clinstaff})
+
+
+@login_required(login_url="/login/")
+def delete_clin_pers(request, pk):
+    clin_staff_items = get_object_or_404(Clinic_Pers_Other, pk=pk)
+    clin_staff_items.delete()
+    return redirect('view_clin_pers')
+
+
+@login_required(login_url="/login/")
+def get_clinic_pers_details(request):
+    clin_staff_name = request.GET.get('clin_staff_id')  # Actually contains a name, not an ID
+    clin_staff = Clinic_Pers_Other.objects.filter(Pers_Name=clin_staff_name).first()
+
+    if clin_staff:
+        return JsonResponse({
+            # 'ClinStaff_Telnum': str(lab_staff.ClinStaff_Telnum),  # Convert PhoneNumber to string
+            'Pers_Contact': clin_staff.Pers_Contact,  # Convert PhoneNumber to string
+            'Pers_Email': clin_staff.Pers_Email,
+        
+        })
+    else:
+        return JsonResponse({'error': 'Staff not found'}, status=404)
+
+
+
+
+
+
 
 
 @login_required(login_url="/login/")

@@ -935,7 +935,9 @@ label.form-control-label{
                         <div class="form-group">
                           <label class='form-control-label' for='Clinic_Staff'>Clinic Staff</label> 
                           <div class="d-flex align-items-center">{{form.Clinic_Staff| append_attr:"class: form-control"|append_attr:"tabindex:105" }}
-                        
+                            <span><a href="{% url 'add_clin_pers' %}" class="col-4 shortcut-item" style="padding: 0;">
+                              <span class="ni ni-settings" style="margin-left: 10px; line-height: 0; vertical-align: text-bottom;"></span>
+                              </a></span>
                           </div>
                         </div>
                       </div>
@@ -960,8 +962,13 @@ label.form-control-label{
                       <div class="col-lg-12">
                         <div class="row">
                           <div class="col-lg-3">
-                            <div class="form-group">
-                              <label class='form-control-label' for='Requesting_Physician'>Requesting Physician</label> {{form.Requesting_Physician| append_attr:"class: form-control"|append_attr:"tabindex:109" }}
+                              <div class="form-group">
+                              <label class='form-control-label' for='Requesting_Physician'>Requesting Physician</label> 
+                             <div class="d-flex align-items-center">{{form.Requesting_Physician| append_attr:"class: form-control"|append_attr:"tabindex:109" }}
+                            <span><a href="{% url 'add_clin_pers' %}" class="col-4 shortcut-item" style="padding: 0;">
+                              <span class="ni ni-settings" style="margin-left: 10px; line-height: 0; vertical-align: text-bottom;"></span>
+                              </a></span>
+                          </div>
                             </div>
                           </div>
                           <div class="col-lg-3"> 
@@ -1755,8 +1762,6 @@ label.form-control-label{
   document.getElementById('id_Consult_Date').addEventListener('change', calculateAge);
 </script>
 
-
-
 <!-- for all none fields -->
 <script>
   // Utility to safely set dropdown value
@@ -1949,6 +1954,31 @@ label.form-control-label{
         $('#id_val_email').val('');
       }
     });
+
+
+    // --- Auto fill ars_contact and ars_email when staff is selected ---
+    $('#id_Clinic_Staff').change(function () {
+      const clinStaffId = $(this).val();
+      if (clinStaffId) {
+        $.ajax({
+          url: "{% url 'get_clinic_pers_details' %}",
+          data: { clin_staff_id: clinStaffId },
+          dataType: 'json',
+          success: function (data) {
+            $('#id_Telephone_Number').val(data.Pers_Contact);
+            $('#id_Email_Address').val(data.Pers_Email);
+          }
+        });
+      } else {
+        $('#id_Telephone_Number').val('');
+        $('#id_Email_Address').val('');
+      }
+    });
+
+
+
+
+
 
     // ✅ ADD THIS HERE – triggers the change to fetch contact info when editing
     if ($('#id_Laboratory_Staff').val()) {

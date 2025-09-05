@@ -397,6 +397,7 @@ class Egasp_Data(models.Model):
     Secondary_Antibiotic = models.CharField(max_length=100, choices=Secondary_Antibiotics, default="None")
     Secondary_Abx_Other = models.CharField(max_length=100,blank=True, default="n/a")
     Notes = models.TextField(blank=True, max_length=255,)
+    
     Clinic_Staff = models.CharField(max_length=100,blank=True,)
     Requesting_Physician = models.CharField(max_length=100,blank=True,)
     Telephone_Number = models.CharField(max_length=100,blank=True,)
@@ -637,3 +638,14 @@ class Clinic_Staff_Details(models.Model):
         return self.ClinStaff_Name if self.ClinStaff_Name else "Unnamed Staff"
 
 
+
+
+class Clinic_Pers_Other(models.Model):
+    Pers_Name = models.CharField(max_length=100, blank=True, null=True)
+    Pers_License= models.CharField(max_length=100, blank=True, null=True)
+    Pers_Designation= models.CharField(max_length=150, blank=True, null=True)
+    Pers_Email = models.EmailField(max_length=100, blank=True, null=True, validators=[EmailValidator()])
+    Pers_Contact = models.CharField(max_length=27, blank=True, null=True)
+
+    def __str__(self):
+        return self.Pers_Name if self.Pers_Name else "Unnamed Staff"

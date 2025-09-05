@@ -946,7 +946,9 @@ label.form-control-label{
                         <div class="form-group">
                           <label class='form-control-label' for='Clinic_Staff'>Clinic Staff</label> 
                           <div class="d-flex align-items-center">{{form.Clinic_Staff| append_attr:"class: form-control"|append_attr:"tabindex:105" }}
-                        
+                            <span><a href="{% url 'add_clin_pers' %}" class="col-4 shortcut-item" style="padding: 0;">
+                              <span class="ni ni-settings" style="margin-left: 10px; line-height: 0; vertical-align: text-bottom;"></span>
+                              </a></span>
                           </div>
                         </div>
                       </div>
@@ -972,7 +974,12 @@ label.form-control-label{
                         <div class="row">
                           <div class="col-lg-3">
                             <div class="form-group">
-                              <label class='form-control-label' for='Requesting_Physician'>Requesting Physician</label> {{form.Requesting_Physician| append_attr:"class: form-control" |append_attr:"tabindex:109"}}
+                              <label class='form-control-label' for='Requesting_Physician'>Requesting Physician</label> 
+                             <div class="d-flex align-items-center">{{form.Requesting_Physician| append_attr:"class: form-control"|append_attr:"tabindex:109" }}
+                            <span><a href="{% url 'add_clin_pers' %}" class="col-4 shortcut-item" style="padding: 0;">
+                              <span class="ni ni-settings" style="margin-left: 10px; line-height: 0; vertical-align: text-bottom;"></span>
+                              </a></span>
+                          </div>
                             </div>
                           </div>
                           <div class="col-lg-3"> 
@@ -1679,92 +1686,6 @@ label.form-control-label{
 
 
 <!-- for all none fields -->
-<!-- <script>
-  // change field.disable = true when you do not want the field to be edited though this will not automatically set the value into "no" to the other fields
-  document.addEventListener("DOMContentLoaded", function () {
-
-    function setDropdownValue(field, value) {
-      if (!field || field.tagName !== "SELECT") return;
-
-      const hasOption = Array.from(field.options).some(opt => opt.value === value);
-      if (hasOption) {
-        field.value = value;
-        field.dispatchEvent(new Event('change'));
-      } else {
-        console.warn(`Option "${value}" not found in <select> #${field.id}`);
-      }
-    }
-
-    function setupDisableLogic(triggerId, fieldIds, disableValue = "Yes", defaultValue = "No") {
-      const triggerField = document.getElementById(triggerId);
-      const targetFields = fieldIds.map(id => document.getElementById(id));
-
-      function toggleFields() {
-        const shouldDisable = triggerField && triggerField.value === disableValue;
-
-        targetFields.forEach(field => {
-          if (!field || field.tagName !== "SELECT") return;
-
-          if (shouldDisable) {
-            setDropdownValue(field, defaultValue);  // Set to "No"
-            field.disabled = false;
-          } else {
-            field.disabled = false;
-            if (field.value === defaultValue) {
-              setDropdownValue(field, "");  // Reset to blank
-            }
-          }
-        });
-      }
-
-      // Delay ensures Django pre-filled values are available
-      setTimeout(toggleFields, 100);
-
-      if (triggerField) {
-        triggerField.addEventListener("change", toggleFields);
-      }
-    }
-
-    // STIs - Disable all other dropdowns if "None" is selected
-    setupDisableLogic("id_Sti_None", [
-      "id_Sti_Hiv",
-      "id_Sti_Hepatitis_B",
-      "id_Sti_Hepatitis_C",
-      "id_Sti_Syphilis",
-      "id_Sti_Chlamydia",
-      "id_Sti_NGI",
-      "id_Sti_Anogenital_Warts",
-      "id_Sti_Genital_Ulcer",
-      "id_Sti_Herpes",
-      "id_Sti_Trichomoniasis",
-      "id_Sti_Mycoplasma_genitalium",
-      "id_Sti_Lymphogranuloma"
-    ]);
-
-    // Antibiotic Use - Disable others if "None" is selected
-    setupDisableLogic("id_Abx_Use_None", [
-      "id_Abx_Use_Prescribed",
-      "id_Abx_Use_Self_Medicated",
-      "id_Abx_Use_Other"
-    ]);
-
-    // Symptoms - Disable others if "No" is selected
-    setupDisableLogic("id_Symp_No", [
-      "id_Symp_Discharge_Urethra",
-      "id_Symp_Discharge_Vagina",
-      "id_Symp_Discharge_Anus",
-      "id_Symp_Discharge_Oropharyngeal",
-      "id_Symp_Pain_Lower_Abdomen",
-      "id_Symp_Tender_Testicles",
-      "id_Symp_Painful_Urination",
-      "id_Symp_Painful_Intercourse",
-      "id_Symp_Rectal_Pain"
-    ]);
-  });
-</script> -->
-
-
-
 <script>
   // Utility to safely set dropdown value
   function setDropdownValue(field, value) {
@@ -1954,6 +1875,25 @@ label.form-control-label{
         $('#id_val_designation').val('');
         $('#id_val_contact').val('');
         $('#id_val_email').val('');
+      }
+    });
+
+    // --- Auto fill ars_contact and ars_email when staff is selected ---
+    $('#id_Clinic_Staff').change(function () {
+      const clinStaffId = $(this).val();
+      if (clinStaffId) {
+        $.ajax({
+          url: "{% url 'get_clinic_pers_details' %}",
+          data: { clin_staff_id: clinStaffId },
+          dataType: 'json',
+          success: function (data) {
+            $('#id_Telephone_Number').val(data.Pers_Contact);
+            $('#id_Email_Address').val(data.Pers_Email);
+          }
+        });
+      } else {
+        $('#id_Telephone_Number').val('');
+        $('#id_Email_Address').val('');
       }
     });
 

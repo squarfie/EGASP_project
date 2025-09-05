@@ -1,0 +1,83 @@
+{% extends 'layouts/base.html' %}
+{% load static %} 
+{% load widget_tweaks %}
+
+{% block title %} Add New Specimen Type {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<body>
+
+  <div class="container">
+    
+    <div class="col-lg-12">
+      <div class="text-right">
+        <a href="{% url 'view_clin_pers' %}" class="btn btn-secondary mt-4">View all</a>
+      </div>
+
+      <!-- Page Title -->
+      <div class="text-center text-muted mb-4">
+        <h2>Edit Clinic Staff Details</h2>
+      </div>
+
+     <form method="POST" action="{% url 'edit_clin_pers' clinstaff.id %}" autocomplete="on" id="editpersForm">
+  {% csrf_token %}
+
+  <!-- Your form fields here -->
+  <div class="form-group">
+    <div class="col-lg-12">
+      <div class="row">
+        <div class="col-lg-2"></div>
+        <div class="col-lg-8">
+          <div class="form-group">
+            <label class="form-control-label" for="Pers_Name">Name of ARSP Staff:</label>
+            {{ form.Pers_Name|append_attr:"class:form-control" }}
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="form-group">
+            <label class="form-control-label" for="Pers_License">License No:</label>
+            {{ form.Pers_License|append_attr:"class:form-control" }}
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="form-group">
+            <label class="form-control-label" for="Pers_Designation">Designation:</label>
+            {{ form.Pers_Designation|append_attr:"class:form-control" }}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+         <div class="col-lg-6">
+          <div class="form-group">
+            <label class="form-control-label" for="Pers_Contact">Contact No:</label>
+            {{ form.Pers_Contact|append_attr:"class:form-control" }}
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="form-group">
+            <label class="form-control-label" for="Pers_Email">Email Address:</label>
+            {{ form.Pers_Email|append_attr:"class:form-control" }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Buttons moved inside the form -->
+  <div class="text-center">
+    <button type="submit" class="btn btn-primary mt-4">Submit</button>
+    <button class="btn btn-secondary mt-4" onclick="history.back()">Back</button>
+  </div>
+</form>
+ </div>
+</div>
+
+   
+
+</body>
+
+{% endblock content %}

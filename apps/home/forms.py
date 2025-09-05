@@ -23,6 +23,23 @@ class egasp_Form(forms.ModelForm):
              required=False,
         )
         
+        Clinic_Staff = forms.ModelChoiceField(
+             queryset=Clinic_Pers_Other.objects.all(),
+             to_field_name='Pers_Name',
+             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
+             empty_label="",
+             required=False,
+        )
+        
+        Requesting_Physician = forms.ModelChoiceField(
+             queryset=Clinic_Pers_Other.objects.all(),
+             to_field_name='Pers_Name',
+             widget=forms.Select(attrs={'class': "form-select fw-bold", 'style': 'max-width: auto;'}),
+             empty_label="",
+             required=False,
+        )
+        
+
         Validator_Pers = forms.ModelChoiceField(
              queryset=Clinic_Staff_Details.objects.all(),
              to_field_name='ClinStaff_Name',
@@ -438,3 +455,11 @@ class LocationUploadForm(forms.ModelForm):
         widgets = {
             'file': forms.FileInput(attrs={'class': 'form-control'})
         }
+
+
+
+class Clinic_Pers_Form(forms.ModelForm):
+    class Meta:
+        model = Clinic_Pers_Other
+        fields = '__all__'
+

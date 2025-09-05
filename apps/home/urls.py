@@ -36,11 +36,20 @@ urlpatterns = [
     path('specimens-delete/<int:pk>/', views.delete_specimen, name='delete_specimen'),
     path('generate_gs/<int:id>/', views.generate_gs, name='generate_gs'),
     path('antibioticentry-export/', views.export_Antibioticentry, name='export_Antibioticentry'),
+   
     path('contact/add/', views.add_contact, name='add_contact'),
     path('contact/delete/<int:id>/', views.delete_contact, name='delete_contact'),
-    path('contact/view/', views.contact_view, name='contact_view'),
+    path('contact/view/', views.contact_view, name='contact_view'),  
     path('contact/edit/<int:pk>/', views.edit_contact, name='edit_contact'),
     path('get_clinic_staff_details/', views.get_clinic_staff_details, name='get_clinic_staff_details'),
+    
+    path('clinstaff/add/', views.add_clin_pers, name='add_clin_pers'),
+    path('clinstaff/view/', views.view_clin_pers, name='view_clin_pers'),
+    path('clinstaff/edit/<int:pk>/', views.edit_clin_pers, name='edit_clin_pers'),
+    path('clinstaff/del/<int:pk>/', views.delete_clin_pers, name='delete_clin_pers'),
+    path('get_clinic_pers_details/', views.get_clinic_pers_details, name='get_clinic_pers_details'),
+   
+    
     path("add-location/", views.add_location, name="add_location"),
     path('upload-location/', views.upload_locations, name='upload_locations'),
     path('view-location/', views.view_locations, name='view_locations'),

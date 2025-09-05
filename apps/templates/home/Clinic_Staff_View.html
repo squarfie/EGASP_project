@@ -12,13 +12,13 @@
                     <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
                         <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                             <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home"></i></a></li>
-                            <li class="breadcrumb-item"><a href="{% url 'add_contact' %}">Add Contact</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'add_clin_pers' %}">Add Personnel</a></li>
                             <li class="breadcrumb-item active" aria-current="page">View All</li>
                         </ol>
                     </nav>
                 </div>
                 <div class="col-lg-6 col-5 text-right">
-                    <a class="btn btn-sm btn-neutral" href="{% url 'add_contact' %}">Add Contact</a>
+                    <a class="btn btn-sm btn-neutral" href="{% url 'add_clin_pers' %}">Add Clinic Personnel</a>
                     <a href="#" class="btn btn-sm btn-neutral">Filters</a>
                 </div>
             </div>
@@ -66,18 +66,17 @@
                             </tr>
                         </thead>
                         <tbody class="list">
-                            {% for contact_item in contact_items %}
+                            {% for item in clin_staff_items %}
                             <tr>
-                                
                                 <td>
-                                    <a href="{% url 'edit_contact' contact_item.id %}" class="btn btn-sm btn-info">Edit</a>
-                                    <a href="#" class="btn btn-sm btn-danger delete-btn" data-toggle="modal" data-target="#deleteModal" data-url="{% url 'delete_contact' contact_item.id %}">Delete</a>
+                                    <a href="{% url 'edit_clin_pers' item.id %}" class="btn btn-sm btn-info">Edit</a>
+                                    <a href="#" class="btn btn-sm btn-danger delete-btn" data-toggle="modal" data-target="#deleteModal" data-url="{% url 'delete_clin_pers' item.id %}">Delete</a>
                                 </td>
-                                <td>{{ contact_item.ClinStaff_Name }}</td>
-                                <td>{{ contact_item.ClinStaff_License }}</td>
-                                <td>{{ contact_item.ClinStaff_Designation }}</td>
-                                <td>{{ contact_item.ClinStaff_Contact }}</td>
-                                <td>{{ contact_item.ClinStaff_Email }}</td>
+                                <td>{{ item.Pers_Name }}</td>
+                                <td>{{ item.Pers_License }}</td>
+                                <td>{{ item.Pers_Designation }}</td>
+                                <td>{{ item.Pers_Contact }}</td>
+                                <td>{{ item.Pers_Email }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -146,15 +145,15 @@
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
 <script>
-    $(document).ready(function(){
-        var deleteUrl; 
-        $('.delete-btn').on('click', function(){
-            deleteUrl = $(this).data('url');
-        });
+  $(document).ready(function(){
+      var deleteUrl;
+      $('.delete-btn').on('click', function(){
+          deleteUrl = $(this).data('url');
+      });
 
-        $('#confirmDelete').on('click', function(){
-            window.location.href = deleteUrl;
-        });
-    });
+      $('#confirmDelete').on('click', function(){
+          window.location.href = deleteUrl;
+      });
+  });
 </script>
 {% endblock javascripts %}
