@@ -319,7 +319,9 @@ class egasp_Form(forms.ModelForm):
             self.fields['GS_Other_sp'].required=False
             self.fields['GS_Other_sp2'].required=False
             self.fields['GS_Other_sp3'].required=False
-    
+            self.fields['Clinic_Staff'].required=False
+            self.fields['Requesting_Physician'].required=False
+            self.fields['Telephone_Number'].required=False
 
 
             # Populate cities on edit mode (instance exists and has provinces set)

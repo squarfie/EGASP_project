@@ -445,10 +445,25 @@
                     <td colspan="4" style="border-right: 1px solid gray;"><strong>Others:</strong></td>
                     <td colspan="4"></td>
                 </tr>
+                {% if isolate.GS_Others|default:''%}
                 <tr>
-                    <td colspan="4" style="border-right: 1px solid gray;">{{isolate.GS_Others}}</td>
+                    <td colspan="2" style="text-align: right;">{{isolate.GS_Others}}</td>
+                    <td colspan="2" style="border-right: 1px solid gray;">{{isolate.GS_Other_sp}}</td>
                     <td colspan="4"></td>
                 </tr>
+                {% elif isolate.GS_Others2|default:''%}
+                 <tr>
+                    <td colspan="2" style="text-align: right;">{{isolate.GS_Others2}}</td>
+                    <td colspan="2" style="border-right: 1px solid gray;">{{isolate.GS_Other_sp2}}</td>
+                    <td colspan="4"></td>
+                </tr>
+                {% elif isolate.GS_Others3|default:''%}
+                 <tr>
+                    <td colspan="2" style="text-align: right;">{{isolate.GS_Others3}}</td>
+                    <td colspan="2" style="border-right: 1px solid gray;">{{isolate.GS_Other_sp3}}</td>
+                    <td colspan="4"></td>
+                </tr>
+                {% endif %}
                 <tr>
                     <td colspan="4" style="border-right: 1px solid gray;"><strong>Date Released:</strong>&nbsp;&nbsp;{{isolate.GS_Date_Released}}</td>
                     <td colspan="4"></td>

@@ -398,9 +398,9 @@ class Egasp_Data(models.Model):
     Secondary_Abx_Other = models.CharField(max_length=100,blank=True, default="n/a")
     Notes = models.TextField(blank=True, max_length=255,)
     
-    Clinic_Staff = models.CharField(max_length=100,blank=True,)
-    Requesting_Physician = models.CharField(max_length=100,blank=True,)
-    Telephone_Number = models.CharField(max_length=100,blank=True,)
+    Clinic_Staff = models.CharField(max_length=100,blank=True,null=True,default="")
+    Requesting_Physician = models.CharField(max_length=100,blank=True,null=True,default="")
+    Telephone_Number = models.CharField(max_length=100,blank=True,default="")
     Email_Address = models.EmailField(max_length=100, blank=True, null=True, validators=[EmailValidator()])
     Date_Accomplished_Clinic = models.DateField(blank=True, null=True, auto_now = False)
     Date_Requested_Clinic = models.DateField(blank=True, null=True)
@@ -635,7 +635,7 @@ class Clinic_Staff_Details(models.Model):
     ClinStaff_Contact = models.CharField(max_length=27, blank=True, null=True)
 
     def __str__(self):
-        return self.ClinStaff_Name if self.ClinStaff_Name else "Unnamed Staff"
+        return self.ClinStaff_Name if self.ClinStaff_Name else ""
 
 
 
@@ -648,4 +648,4 @@ class Clinic_Pers_Other(models.Model):
     Pers_Contact = models.CharField(max_length=27, blank=True, null=True)
 
     def __str__(self):
-        return self.Pers_Name if self.Pers_Name else "Unnamed Staff"
+        return self.Pers_Name if self.Pers_Name else ""

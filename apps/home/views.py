@@ -35,6 +35,10 @@ from io import TextIOWrapper
 def index(request):
     isolates = Egasp_Data.objects.all().order_by('-Date_of_Entry')
 
+    paginator = Paginator(isolates, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     # Count per clinic
     tly_count = Egasp_Data.objects.filter(Clinic_Code='TLY').count()
     psh_count = Egasp_Data.objects.filter(Clinic_Code='PSH').count()
@@ -66,6 +70,7 @@ def index(request):
         'age_19_35': age_19_35,
         'age_36_60': age_36_60,
         'age_60_plus': age_60_plus,
+        'page_obj': page_obj,
     }
 
     return render(request, 'home/index.html', context)
@@ -110,12 +115,22 @@ def crf_data(request):
             egasp_instance = form.save(commit=False)
             lab_staff = form.cleaned_data.get('Laboratory_Staff')
             validator = form.cleaned_data.get('Validator_Pers')
+          
+
             if lab_staff:
                 egasp_instance.ars_license = lab_staff.ClinStaff_License
                 egasp_instance.ars_designation = lab_staff.ClinStaff_Designation
+                
             if  validator:
                 egasp_instance.val_license = validator.ClinStaff_License
                 egasp_instance.val_designation = validator.ClinStaff_Designation
+         
+            if egasp_instance.Clinic_Staff is None: # if None, dont put N/A put an Empty string
+                egasp_instance.Clinic_Staff = ""
+            
+            if egasp_instance.Requesting_Physician is None:
+                egasp_instance.Requesting_Physician = ""
+
             egasp_instance.save()
             
             # Loop through `whonet_abx_data` to save the related antibiotics
@@ -284,6 +299,13 @@ def edit_data(request, id):
             if  validator:
                 egasp_instance.val_license = validator.ClinStaff_License
                 egasp_instance.val_designation = validator.ClinStaff_Designation
+            
+            if egasp_instance.Clinic_Staff is None:
+                egasp_instance.Clinic_Staff = ""
+            
+            if egasp_instance.Requesting_Physician is None:
+                egasp_instance.Requesting_Physician = ""
+
             egasp_instance.save()
 
             # Update or Create Antibiotic Entries (whonet_abx_data)
@@ -1011,13 +1033,13 @@ def delete_clin_pers(request, pk):
 
 @login_required(login_url="/login/")
 def get_clinic_pers_details(request):
-    clin_staff_name = request.GET.get('clin_staff_id')  # Actually contains a name, not an ID
+    clin_staff_name = request.GET.get('clin_staff_id')  #  contains a name, not an ID
     clin_staff = Clinic_Pers_Other.objects.filter(Pers_Name=clin_staff_name).first()
 
     if clin_staff:
         return JsonResponse({
             # 'ClinStaff_Telnum': str(lab_staff.ClinStaff_Telnum),  # Convert PhoneNumber to string
-            'Pers_Contact': clin_staff.Pers_Contact,  # Convert PhoneNumber to string
+            'Pers_Contact': clin_staff.Pers_Contact,  
             'Pers_Email': clin_staff.Pers_Email,
         
         })
