@@ -193,6 +193,10 @@ class egasp_Form(forms.ModelForm):
             'Sexual_Behavior_Others': forms.TextInput(attrs={'placeholder': 'specify other Sexual Behavior'}),
             'Sti_Other': forms.TextInput(attrs={'placeholder': 'specify other STIs'}),
             'growth_span': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'Current_Province': forms.Select(attrs={'class': 'form-control'}),
+            'Current_City': forms.Select(attrs={'class': 'form-control'}),
+            'Permanent_Province': forms.Select(attrs={'class': 'form-control'}),
+            'Permanent_City': forms.Select(attrs={'class': 'form-control'}),
             # Add more fields as needed
             }
         
@@ -322,23 +326,68 @@ class egasp_Form(forms.ModelForm):
             self.fields['Clinic_Staff'].required=False
             self.fields['Requesting_Physician'].required=False
             self.fields['Telephone_Number'].required=False
+            self.fields['PTIDCode'].queryset = ClinicData.objects.all() # Always load the latest ClinicData instances into the PTIDCode field
+            
+            # Province querysets (always load)
+            self.fields['Current_Province_fk'].queryset = Province.objects.all()
+            self.fields['Permanent_Province_fk'].queryset = Province.objects.all()
+           
+            # Province dropdowns (remove "-------")
+            self.fields['Current_Province_fk'].empty_label = None
+            self.fields['Permanent_Province_fk'].empty_label = None
+
+            # City dropdowns (remove "-------")
+            self.fields['Current_City_fk'].empty_label = None
+            self.fields['Permanent_City_fk'].empty_label = None
 
 
-            # Populate cities on edit mode (instance exists and has provinces set)
-            # if self.instance and self.instance.Current_Province:
-            #     self.fields['Current_City'].queryset = City.objects.filter(
-            #         province=self.instance.Current_Province
-            #     )
+           # City querysets (dependent, so start empty)
+            if self.data:  # POST
+                prov_id = self.data.get('Current_Province_fk')
+                self.fields['Current_City_fk'].queryset = City.objects.filter(province_id=prov_id) if prov_id else City.objects.none()
 
-            # if self.instance and self.instance.Permanent_Province:
-            #     self.fields['Permanent_City'].queryset = City.objects.filter(
-            #         province=self.instance.Permanent_Province
-            # )
+                perm_prov_id = self.data.get('Permanent_Province_fk')
+                self.fields['Permanent_City_fk'].queryset = City.objects.filter(province_id=perm_prov_id) if perm_prov_id else City.objects.none()
+
+            # elif self.instance.pk:  # Edit
+            #     if self.instance.Current_Province_fk:
+            #         self.fields['Current_City_fk'].queryset = City.objects.filter(province=self.instance.Current_Province_fk)
+            #     else:
+            #         self.fields['Current_City_fk'].queryset = City.objects.none()
+
+            #     if self.instance.Permanent_Province_fk:
+            #         self.fields['Permanent_City_fk'].queryset = City.objects.filter(province=self.instance.Permanent_Province_fk)
+            #     else:
+            #         self.fields['Permanent_City_fk'].queryset = City.objects.none()
 
 
-def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-    self.fields['PTIDCode'].queryset = ClinicData.objects.all() # Always load the latest ClinicData instances into the PTIDCode field
+
+            elif self.instance.pk:  # Edit
+                # --- Current Province / City ---
+                if self.instance.Current_Province_fk:
+                    self.fields['Current_City_fk'].queryset = City.objects.filter(
+                        province=self.instance.Current_Province_fk
+                    )
+                elif self.instance.Current_Province:  # fallback to CharField
+                    prov = Province.objects.filter(name=self.instance.Current_Province).first()
+                    if prov:
+                        self.fields['Current_Province_fk'].initial = prov
+                        self.fields['Current_City_fk'].queryset = City.objects.filter(province=prov)
+                else:
+                    self.fields['Current_City_fk'].queryset = City.objects.none()
+
+                # --- Permanent Province / City ---
+                if self.instance.Permanent_Province_fk:
+                    self.fields['Permanent_City_fk'].queryset = City.objects.filter(
+                        province=self.instance.Permanent_Province_fk
+                    )
+                elif self.instance.Permanent_Province:  # fallback to CharField
+                    prov = Province.objects.filter(name=self.instance.Permanent_Province).first()
+                    if prov:
+                        self.fields['Permanent_Province_fk'].initial = prov
+                        self.fields['Permanent_City_fk'].queryset = City.objects.filter(province=prov)
+                else:
+                    self.fields['Permanent_City_fk'].queryset = City.objects.none()
 
 
 

@@ -35,10 +35,6 @@ from io import TextIOWrapper
 def index(request):
     isolates = Egasp_Data.objects.all().order_by('-Date_of_Entry')
 
-    paginator = Paginator(isolates, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
     # Count per clinic
     tly_count = Egasp_Data.objects.filter(Clinic_Code='TLY').count()
     psh_count = Egasp_Data.objects.filter(Clinic_Code='PSH').count()
@@ -59,7 +55,7 @@ def index(request):
 
     # Include all context variables
     context = {
-        'isolates': isolates,
+        'isolates' : isolates,
         'tly_count': tly_count,
         'psh_count': psh_count,
         'tsh_count': tsh_count,
@@ -70,10 +66,13 @@ def index(request):
         'age_19_35': age_19_35,
         'age_36_60': age_36_60,
         'age_60_plus': age_60_plus,
-        'page_obj': page_obj,
     }
 
     return render(request, 'home/index.html', context)
+
+
+
+
 
 
 @login_required(login_url="/login/")
@@ -224,30 +223,6 @@ def crf_data(request):
     })
 
 
-
-
-#Retrieve all data
-# def show_data(request):
-#     # Prefetch related objects to optimize database queries
-#     isolates = Egasp_Data.objects.prefetch_related(
-#         'antibiotic_entries'
-#     ).order_by('-Date_of_Entry')
-
-  
-  
-
-#     # Paginate the queryset to display 20 records per page
-#     paginator = Paginator(isolates, 20)
-#     page_number = request.GET.get('page')
-#     page_obj = paginator.get_page(page_number)
-
-#     # Render the template with paginated data
-#     return render(request, 'home/tables.html', {'page_obj': page_obj})
-
-    
-#     # normal view without paginators
-#     # return render(request, 'home/tables.html',{'isolates' :isolates}
-
 @login_required(login_url="/login/")
 #with sorting function
 def show_data(request):
@@ -277,6 +252,23 @@ def show_data(request):
 def edit_data(request, id):
     # Fetch the Egasp_Data instance to edit
     isolates = get_object_or_404(Egasp_Data, pk=id)
+
+    # --- Province/City fix for edit mode ---
+    # This ensures that the form fields are populated with the correct Province and City instances
+    # Province fix
+    if isinstance(isolates.Current_Province_fk, str):
+        isolates.Current_Province_fk = Province.objects.filter(provincename=isolates.Current_Province_fk).first()
+
+    if isinstance(isolates.Permanent_Province_fk, str):
+        isolates.Permanent_Province = Province.objects.filter(provincename=isolates.Permanent_Province_fk).first()
+
+    # City fix
+    if isinstance(isolates.Current_City_fk, str):
+        isolates.Current_City = City.objects.filter(cityname=isolates.Current_City_fk).first()
+
+    if isinstance(isolates.Permanent_City_fk, str):
+        isolates.Permanent_City = City.objects.filter(cityname=isolates.Permanent_City_fk).first()
+
 
     # Fetch related data for antibiotics
   
@@ -836,14 +828,13 @@ def abxentry_view(request):
             abx_data[egasp_id][abx_code] = {'value': value, 'RIS': RIS, 'Operand': Operand}
             abx_codes.add(abx_code)  # Add only ordinary antibiotics
 
+
     context = {
         'abx_data': abx_data,
         'abx_codes': sorted(abx_codes),  # Sorted list of ordinary antibiotics
     }
     
     return render(request, 'home/AntibioticentryView.html', context)
-
-
 
 
 @login_required(login_url="/login/")
@@ -1146,18 +1137,20 @@ def add_location(request, id=None):
     return render(request, "home/Add_location.html", {"form": form, "provinces": provinces, "upload_form": upload_form})
 
 @login_required(login_url="/login/")
-# def get_cities_by_province(request):
-#     province_id = request.GET.get('province_id')
-#     cities = []
-#     if province_id and province_id.isdigit():
-#         cities = City.objects.filter(province_id=province_id).order_by('cityname').values('id', 'cityname')
-#     return JsonResponse({'cities': list(cities)})
-
 #used for grouping cities
 def get_cities_by_province(request):
     province_id = request.GET.get('province_id')
     cities = City.objects.filter(province_id=province_id).values('id', 'cityname')
     return JsonResponse({'cities': list(cities)})
+
+
+# def get_cities_by_province(request):
+#     province_name = request.GET.get('province_id')  # actually province_name
+#     if not province_name:
+#         return JsonResponse({'cities': []})
+
+#     cities = City.objects.filter(province__provincename=province_name).values('id', 'cityname')
+#     return JsonResponse(list(cities), safe=False)
 
 
 @login_required(login_url="/login/")
@@ -1182,6 +1175,133 @@ def delete_city(request, id):
     city_items = get_object_or_404(City, pk=id)
     city_items.delete()
     return redirect('view_locations')
+
+
+
+#download combined table
+def is_blank(value):
+    return value in [None, '', 0]
+
+
+def download_combined_table(request):
+    egasp_data_entries = Egasp_Data.objects.all()
+
+    # Collect unique antibiotics from both abx and retest
+    unique_abx_codes = set()
+    for abx_code, rt_code in AntibioticEntry.objects.values_list('ab_Abx_code', 'ab_Retest_Abx_code').distinct():
+        if abx_code:
+            unique_abx_codes.add(abx_code)
+        if rt_code:
+            unique_abx_codes.add(rt_code)
+
+    sorted_antibiotics = sorted(unique_abx_codes)
+
+    # Pre-check which antibiotics are disk types
+    disk_abx_lookup = {
+        abx: BreakpointsTable.objects.filter(Whonet_Abx=abx, Disk_Abx=True).exists()
+        for abx in sorted_antibiotics
+    }
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="combined_table.csv"'
+    response.write('\ufeff')  # UTF-8 BOM
+    writer = csv.writer(response)
+
+    # Static fields (as you defined)
+    static_fields = [
+        'Date_of_Entry', 'ID_Number', 'Egasp_Id', 'PTIDCode', 'Laboratory', 'Clinic', 'Consult_Date',
+        'Consult_Type', 'Client_Type', 'Uic_Ptid', 'Clinic_Code', 'ClinicCodeGen', 'First_Name', 'Middle_Name',
+        'Last_Name', 'Suffix', 'Birthdate', 'Age', 'Sex', 'Gender_Identity', 'Gender_Identity_Other',
+        'Occupation', 'Civil_Status', 'Civil_Status_Other', 'Current_Province', 'Current_City', 'Current_Country',
+        'PermAdd_same_CurrAdd', 'Permanent_Province', 'Permanent_City', 'Permanent_Country', 'Other_Country',
+        'Nationality', 'Nationality_Other', 'Travel_History', 'Travel_History_Specify', 'Client_Group',
+        'Client_Group_Other', 'History_Of_Sex_Partner', 'Nationality_Sex_Partner', 'Date_of_Last_Sex',
+        'Nationality_Sex_Partner_Other', 'Number_Of_Sex_Partners', 'Relationship_to_Partners', 'SB_Urethral',
+        'SB_Vaginal', 'SB_Anal_Insertive', 'SB_Oral_Insertive', 'Sharing_of_Sex_Toys', 'SB_Oral_Receptive',
+        'SB_Anal_Receptive', 'SB_Others', 'Sti_None', 'Sti_Hiv', 'Sti_Hepatitis_B', 'Sti_Hepatitis_C',
+        'Sti_NGI', 'Sti_Syphilis', 'Sti_Chlamydia', 'Sti_Anogenital_Warts', 'Sti_Genital_Ulcer', 'Sti_Herpes',
+        'Sti_Other', 'Sti_Trichomoniasis', 'Sti_Mycoplasma_genitalium', 'Sti_Lymphogranuloma', 'Illicit_Drug_Use',
+        'Illicit_Drug_Specify', 'Abx_Use_Prescribed', 'Abx_Use_Prescribed_Specify', 'Abx_Use_Self_Medicated',
+        'Abx_Use_Self_Medicated_Specify', 'Abx_Use_None', 'Abx_Use_Other', 'Abx_Use_Other_Specify',
+        'Route_Oral', 'Route_Injectable_IV', 'Route_Dermal', 'Route_Suppository', 'Route_Other',
+        'Symp_With_Discharge', 'Symp_No', 'Symp_Discharge_Urethra', 'Symp_Discharge_Vagina',
+        'Symp_Discharge_Anus', 'Symp_Discharge_Oropharyngeal', 'Symp_Pain_Lower_Abdomen', 'Symp_Tender_Testicles',
+        'Symp_Painful_Urination', 'Symp_Painful_Intercourse', 'Symp_Rectal_Pain', 'Symp_Other',
+        'Outcome_Of_Follow_Up_Visit', 'Prev_Test_Pos', 'Prev_Test_Pos_Date', 'Result_Test_Cure_Initial',
+        'Result_Test_Cure_Followup', 'NoTOC_Other_Test', 'NoTOC_DatePerformed', 'NoTOC_Result_of_Test',
+        'Patient_Compliance_Antibiotics', 'OtherDrugs_Specify', 'OtherDrugs_Dosage', 'OtherDrugs_Route',
+        'OtherDrugs_Duration', 'Gonorrhea_Treatment', 'Treatment_Outcome', 'Primary_Antibiotic',
+        'Primary_Abx_Other', 'Secondary_Antibiotic', 'Secondary_Abx_Other', 'Notes', 'Clinic_Staff',
+        'Requesting_Physician', 'Telephone_Number', 'Email_Address', 'Date_Accomplished_Clinic',
+        'Date_Requested_Clinic', 'Date_Specimen_Collection', 'Specimen_Code', 'Specimen_Type',
+        'Specimen_Quality', 'Date_Of_Gram_Stain', 'Diagnosis_At_This_Visit', 'Gram_Neg_Intracellular',
+        'Gram_Neg_Extracellular', 'Gs_Presence_Of_Pus_Cells', 'Presence_GN_Intracellular',
+        'Presence_GN_Extracellular', 'GS_Pus_Cells', 'Epithelial_Cells', 'GS_Date_Released', 'GS_Others',
+        'GS_Negative', 'Gs_Gram_neg_diplococcus', 'Gs_NoGram_neg_diplococcus', 'Gs_Not_performed',
+        'Date_Received_in_lab', 'Positive_Culture_Date', 'Culture_Result', 'Growth', 'Growth_span',
+        'Species_Identification', 'Other_species_ID', 'Specimen_Quality_Cs', 'Susceptibility_Testing_Date',
+        'Retested_Mic', 'Confirmation_Ast_Date', 'NAAT_ng', 'NAAT_chl', 'Beta_Lactamase', 'PPng', 'TRng',
+        'Date_Released', 'For_possible_WGS', 'Date_stocked', 'Location', 'abx_code', 'Laboratory_Staff',
+        'Date_Accomplished_ARSP', 'ars_notes', 'ars_license', 'ars_designation', 'Validator_Pers',
+        'Date_Validated_ARSP', 'val_license', 'val_designation'
+    ]
+
+    header = static_fields[:]
+    for abx in sorted_antibiotics:
+        header.append(f'{abx}_Val')
+        header.append(f'{abx}_RIS')
+        header.append(f'{abx}_RT_Val')
+        header.append(f'{abx}_RT_RIS')
+
+    writer.writerow(header)
+
+    for egasp in egasp_data_entries:
+        row = [getattr(egasp, field, '') for field in static_fields]
+        abx_entries = AntibioticEntry.objects.filter(ab_idNumber_egasp=egasp)
+        abx_data = {}
+
+        for ab in abx_entries:
+            # Initial result
+            if ab.ab_Abx_code:
+                code = ab.ab_Abx_code
+                if code not in abx_data:
+                    abx_data[code] = {}
+                if not is_blank(ab.ab_MIC_value) or not is_blank(ab.ab_Disk_value):
+                    val = ab.ab_Disk_value if not is_blank(ab.ab_Disk_value) else f"{ab.ab_MIC_operand or ''}{ab.ab_MIC_value}"
+                    ris = ab.ab_Disk_RIS or ab.ab_MIC_RIS
+                    abx_data[code].update({
+                        '_Val': val,
+                        '_RIS': ris,
+                    })
+
+            # Retest result
+            if ab.ab_Retest_Abx_code:
+                code = ab.ab_Retest_Abx_code
+                if code not in abx_data:
+                    abx_data[code] = {}
+                if not is_blank(ab.ab_Retest_MICValue) or not is_blank(ab.ab_Retest_DiskValue):
+                    rt_val = ab.ab_Retest_DiskValue if not is_blank(ab.ab_Retest_DiskValue) else f"{ab.ab_Retest_MIC_operand or ''}{ab.ab_Retest_MICValue}"
+                    rt_ris = ab.ab_Retest_Disk_RIS or ab.ab_Retest_MIC_RIS
+                    abx_data[code].update({
+                        'RT_Val': rt_val,
+                        'RT_RIS': rt_ris,
+                    })
+
+        # Populate row with antibiotic data
+        for abx in sorted_antibiotics:
+            data = abx_data.get(abx, {})
+            val = data.get('_Val', '')
+            if isinstance(val, (int, float)):
+                val = format(val, '.3f')
+            rt_val = data.get('RT_Val', '')
+            if isinstance(rt_val, (int, float)):
+                rt_val = format(rt_val, '.3f')
+            row.extend([val, data.get('_RIS', ''), rt_val, data.get('RT_RIS', '')])
+
+        writer.writerow(row)
+
+    return response
+
 
 
 # @login_required(login_url="/login/")
@@ -1598,129 +1718,3 @@ def delete_city(request, id):
 
 #     return render(request, 'tables.html', {'upload_form': upload_form})
 
-
-
-#download combined table
-def is_blank(value):
-    return value in [None, '', 0]
-
-
-def download_combined_table(request):
-    egasp_data_entries = Egasp_Data.objects.all()
-
-    # Collect unique antibiotics from both abx and retest
-    unique_abx_codes = set()
-    for abx_code, rt_code in AntibioticEntry.objects.values_list('ab_Abx_code', 'ab_Retest_Abx_code').distinct():
-        if abx_code:
-            unique_abx_codes.add(abx_code)
-        if rt_code:
-            unique_abx_codes.add(rt_code)
-
-    sorted_antibiotics = sorted(unique_abx_codes)
-
-    # Pre-check which antibiotics are disk types
-    disk_abx_lookup = {
-        abx: BreakpointsTable.objects.filter(Whonet_Abx=abx, Disk_Abx=True).exists()
-        for abx in sorted_antibiotics
-    }
-
-    response = HttpResponse(content_type='text/csv; charset=utf-8')
-    response['Content-Disposition'] = 'attachment; filename="combined_table.csv"'
-    response.write('\ufeff')  # UTF-8 BOM
-    writer = csv.writer(response)
-
-    # Static fields (as you defined)
-    static_fields = [
-        'Date_of_Entry', 'ID_Number', 'Egasp_Id', 'PTIDCode', 'Laboratory', 'Clinic', 'Consult_Date',
-        'Consult_Type', 'Client_Type', 'Uic_Ptid', 'Clinic_Code', 'ClinicCodeGen', 'First_Name', 'Middle_Name',
-        'Last_Name', 'Suffix', 'Birthdate', 'Age', 'Sex', 'Gender_Identity', 'Gender_Identity_Other',
-        'Occupation', 'Civil_Status', 'Civil_Status_Other', 'Current_Province', 'Current_City', 'Current_Country',
-        'PermAdd_same_CurrAdd', 'Permanent_Province', 'Permanent_City', 'Permanent_Country', 'Other_Country',
-        'Nationality', 'Nationality_Other', 'Travel_History', 'Travel_History_Specify', 'Client_Group',
-        'Client_Group_Other', 'History_Of_Sex_Partner', 'Nationality_Sex_Partner', 'Date_of_Last_Sex',
-        'Nationality_Sex_Partner_Other', 'Number_Of_Sex_Partners', 'Relationship_to_Partners', 'SB_Urethral',
-        'SB_Vaginal', 'SB_Anal_Insertive', 'SB_Oral_Insertive', 'Sharing_of_Sex_Toys', 'SB_Oral_Receptive',
-        'SB_Anal_Receptive', 'SB_Others', 'Sti_None', 'Sti_Hiv', 'Sti_Hepatitis_B', 'Sti_Hepatitis_C',
-        'Sti_NGI', 'Sti_Syphilis', 'Sti_Chlamydia', 'Sti_Anogenital_Warts', 'Sti_Genital_Ulcer', 'Sti_Herpes',
-        'Sti_Other', 'Sti_Trichomoniasis', 'Sti_Mycoplasma_genitalium', 'Sti_Lymphogranuloma', 'Illicit_Drug_Use',
-        'Illicit_Drug_Specify', 'Abx_Use_Prescribed', 'Abx_Use_Prescribed_Specify', 'Abx_Use_Self_Medicated',
-        'Abx_Use_Self_Medicated_Specify', 'Abx_Use_None', 'Abx_Use_Other', 'Abx_Use_Other_Specify',
-        'Route_Oral', 'Route_Injectable_IV', 'Route_Dermal', 'Route_Suppository', 'Route_Other',
-        'Symp_With_Discharge', 'Symp_No', 'Symp_Discharge_Urethra', 'Symp_Discharge_Vagina',
-        'Symp_Discharge_Anus', 'Symp_Discharge_Oropharyngeal', 'Symp_Pain_Lower_Abdomen', 'Symp_Tender_Testicles',
-        'Symp_Painful_Urination', 'Symp_Painful_Intercourse', 'Symp_Rectal_Pain', 'Symp_Other',
-        'Outcome_Of_Follow_Up_Visit', 'Prev_Test_Pos', 'Prev_Test_Pos_Date', 'Result_Test_Cure_Initial',
-        'Result_Test_Cure_Followup', 'NoTOC_Other_Test', 'NoTOC_DatePerformed', 'NoTOC_Result_of_Test',
-        'Patient_Compliance_Antibiotics', 'OtherDrugs_Specify', 'OtherDrugs_Dosage', 'OtherDrugs_Route',
-        'OtherDrugs_Duration', 'Gonorrhea_Treatment', 'Treatment_Outcome', 'Primary_Antibiotic',
-        'Primary_Abx_Other', 'Secondary_Antibiotic', 'Secondary_Abx_Other', 'Notes', 'Clinic_Staff',
-        'Requesting_Physician', 'Telephone_Number', 'Email_Address', 'Date_Accomplished_Clinic',
-        'Date_Requested_Clinic', 'Date_Specimen_Collection', 'Specimen_Code', 'Specimen_Type',
-        'Specimen_Quality', 'Date_Of_Gram_Stain', 'Diagnosis_At_This_Visit', 'Gram_Neg_Intracellular',
-        'Gram_Neg_Extracellular', 'Gs_Presence_Of_Pus_Cells', 'Presence_GN_Intracellular',
-        'Presence_GN_Extracellular', 'GS_Pus_Cells', 'Epithelial_Cells', 'GS_Date_Released', 'GS_Others',
-        'GS_Other_sp', 'GS_Others2', 'GS_Other_sp2', 'GS_Others3', 'GS_Other_sp3',
-        'GS_Negative', 'Gs_Gram_neg_diplococcus', 'Gs_NoGram_neg_diplococcus', 'Gs_Not_performed',
-        'Date_Received_in_lab', 'Positive_Culture_Date', 'Culture_Result', 'Growth', 'Growth_span', 'Growth_span_other',
-        'Species_Identification', 'Other_species_ID', 'Specimen_Quality_Cs', 'Susceptibility_Testing_Date',
-        'Retested_Mic', 'Confirmation_Ast_Date', 'NAAT_ng', 'NAAT_chl', 'Beta_Lactamase', 'PPng', 'TRng',
-        'Date_Released', 'For_possible_WGS', 'Date_stocked', 'Location', 'abx_code', 'Laboratory_Staff',
-        'Date_Accomplished_ARSP', 'ars_notes', 'ars_license', 'ars_designation', 'Validator_Pers',
-        'Date_Validated_ARSP', 'val_license', 'val_designation'
-    ]
-
-    header = static_fields[:]
-    for abx in sorted_antibiotics:
-        header.append(f'{abx}_Val')
-        header.append(f'{abx}_RIS')
-        header.append(f'{abx}_RT_Val')
-        header.append(f'{abx}_RT_RIS')
-
-    writer.writerow(header)
-
-    for egasp in egasp_data_entries:
-        row = [getattr(egasp, field, '') for field in static_fields]
-        abx_entries = AntibioticEntry.objects.filter(ab_idNumber_egasp=egasp)
-        abx_data = {}
-
-        for ab in abx_entries:
-            # Initial result
-            if ab.ab_Abx_code:
-                code = ab.ab_Abx_code
-                if code not in abx_data:
-                    abx_data[code] = {}
-                if not is_blank(ab.ab_MIC_value) or not is_blank(ab.ab_Disk_value):
-                    val = ab.ab_Disk_value if not is_blank(ab.ab_Disk_value) else f"{ab.ab_MIC_operand or ''}{ab.ab_MIC_value}"
-                    ris = ab.ab_Disk_RIS or ab.ab_MIC_RIS
-                    abx_data[code].update({
-                        '_Val': val,
-                        '_RIS': ris,
-                    })
-
-            # Retest result
-            if ab.ab_Retest_Abx_code:
-                code = ab.ab_Retest_Abx_code
-                if code not in abx_data:
-                    abx_data[code] = {}
-                if not is_blank(ab.ab_Retest_MICValue) or not is_blank(ab.ab_Retest_DiskValue):
-                    rt_val = ab.ab_Retest_DiskValue if not is_blank(ab.ab_Retest_DiskValue) else f"{ab.ab_Retest_MIC_operand or ''}{ab.ab_Retest_MICValue}"
-                    rt_ris = ab.ab_Retest_Disk_RIS or ab.ab_Retest_MIC_RIS
-                    abx_data[code].update({
-                        'RT_Val': rt_val,
-                        'RT_RIS': rt_ris,
-                    })
-
-        # Populate row with antibiotic data
-        for abx in sorted_antibiotics:
-            data = abx_data.get(abx, {})
-            val = data.get('_Val', '')
-            if isinstance(val, (int, float)):
-                val = format(val, '.3f')
-            rt_val = data.get('RT_Val', '')
-            if isinstance(rt_val, (int, float)):
-                rt_val = format(rt_val, '.3f')
-            row.extend([val, data.get('_RIS', ''), rt_val, data.get('RT_RIS', '')])
-
-        writer.writerow(row)
-
-    return response

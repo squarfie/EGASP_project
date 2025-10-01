@@ -19,8 +19,13 @@ class City(models.Model):
     province = models.ForeignKey(Province, on_delete=models.CASCADE, related_name="cities")
 
 
+    class Meta:
+        unique_together = ("province", "cityname")
+
     def __str__(self):
         return f"{self.cityname}"
+
+    
 
 # Model for Province File Upload
 class LocationUpload(models.Model):
@@ -299,13 +304,21 @@ class Egasp_Data(models.Model):
     Occupation = models.CharField(max_length=100, blank=True,)
     Civil_Status = models.CharField(max_length=100, choices=Civil_StatusChoice, default="")
     Civil_Status_Other = models.CharField(max_length=100, blank=True, default="n/a")
-    Current_Province = models.CharField(max_length=100,  default="*None")
-    Current_City = models.CharField(max_length=100, default="*None")
-    Current_Country =models.CharField(max_length=100, choices=Country_Choice, default='Philippines')
-    PermAdd_same_CurrAdd = models.BooleanField(default=False)
-    Permanent_Province = models.CharField(max_length=100, default="*None")
-    Permanent_City = models.CharField(max_length=100, default="*None")
+
+    Current_Province = models.CharField(max_length=100, null=True, blank=True)
+    Current_City = models.CharField(max_length=100, null=True, blank=True)
+    Permanent_Province = models.CharField(max_length=100, null=True, blank=True)
+    Permanent_City = models.CharField(max_length=100, null=True, blank=True)
+
+
+    Current_Province_fk = models.ForeignKey(Province, on_delete=models.SET_NULL, null=True, blank=True, related_name="current_province")
+    Current_City_fk = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True, related_name="current_city")
+    Permanent_Province_fk = models.ForeignKey(Province, on_delete=models.SET_NULL, null=True, blank=True, related_name="permanent_province")
+    Permanent_City_fk = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True, related_name="permanent_city")
+
     Permanent_Country = models.CharField(max_length=100, choices=Country_Choice, default='Philippines')
+    Current_Country =models.CharField(max_length=100, choices=Country_Choice, default='Philippines')
+    PermAdd_same_CurrAdd = models.BooleanField(default=False)   
     Other_Country = models.CharField(max_length=100, blank=True, default='n/a')
     Nationality = models.CharField(max_length=100, choices=Nationality_Choice, default="")
     Nationality_Other = models.CharField(max_length=100,blank=True,default="n/a")
@@ -485,14 +498,23 @@ class Egasp_Data(models.Model):
         return f"Current: {self.Current_City}, {self.Current_Province} | Permanent: {self.Permanent_City}, {self.Permanent_Province}"
 
 
-
-
     # to dissallow duplicates
     def clean(self):
         if self.Egasp_Id:
             if Egasp_Data.objects.filter(Egasp_Id=self.Egasp_Id).exclude(pk=self.pk).exists():
                 raise ValidationError({'Egasp_Id': 'Egasp_Id must be unique.'})
     
+    def save(self, *args, **kwargs):
+        if self.Current_Province_fk:
+            self.Current_Province = self.Current_Province_fk.provincename
+        if self.Current_City_fk:
+            self.Current_City = self.Current_City_fk.cityname
+        if self.Permanent_Province_fk:
+            self.Permanent_Province = self.Permanent_Province_fk.provincename
+        if self.Permanent_City_fk:
+            self.Permanent_City = self.Permanent_City_fk.cityname
+
+        super().save(*args, **kwargs)
 
 class Meta:
     db_table ="Egasp_Data"

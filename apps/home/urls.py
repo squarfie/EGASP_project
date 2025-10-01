@@ -57,7 +57,7 @@ urlpatterns = [
     path('delete_city/<int:id>/', views.delete_city, name='delete_city'),
     path('download_combined_table/', views.download_combined_table, name='download_combined_table'),
     path('get-cities/', views.get_cities_by_province, name='get_cities_by_province'),
-    
+    # path("ajax/get-cities/", views.get_cities, name="get_cities"),
 
    
      

@@ -349,12 +349,13 @@ label.form-control-label{
               </div>
                 <div class="col-lg-4">
                 <div class="form-group">
-                  <label class='form-control-label' for='Current_Province'>Province</label> {{form.Current_Province| append_attr:"class: form-control" |append_attr:"tabindex:22"}}
+                  <label class='form-control-label' for='Current_Province_fk'>Province</label> {{form.Current_Province_fk| append_attr:"class: form-control" |append_attr:"tabindex:22"}}
                 </div>
               </div>
+        
               <div class="col-lg-4">
                 <div class="form-group">
-                  <label class='form-control-label' for='Current_City'>City</label> {{form.Current_City | append_attr:"class: form-control"|append_attr:"tabindex:23" }}
+                  <label class='form-control-label' for='Current_City_fk'>City</label> {{form.Current_City_fk | append_attr:"class: form-control"|append_attr:"tabindex:23" }}
                 </div>
               </div>
 
@@ -375,12 +376,12 @@ label.form-control-label{
               </div>
                 <div class="col-lg-4">
                 <div class="form-group">
-                  <label class='form-control-label' for='Permanent_Province'>Province</label> {{form.Permanent_Province| append_attr:"class: form-control"|append_attr:"tabindex:25" }}
+                  <label class='form-control-label' for='Permanent_Province_fk'>Province</label> {{form.Permanent_Province_fk| append_attr:"class: form-control"|append_attr:"tabindex:25" }}
                 </div>
               </div>
               <div class="col-lg-4">
                 <div class="form-group">
-                  <label class='form-control-label' for='Permanent_City'>City</label> {{form.Permanent_City| append_attr:"class: form-control" |append_attr:"tabindex:26"}}
+                  <label class='form-control-label' for='Permanent_City_fk'>City</label> {{form.Permanent_City_fk| append_attr:"class: form-control" |append_attr:"tabindex:26"}}
                 </div>
               </div>
 
@@ -1627,79 +1628,8 @@ label.form-control-label{
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Copy current address to permanent address -->
 <!-- <script>
-  // This will generate the Clinic Code, Clinic Name, Egasp ID, and cliniccodegen
-  $(document).ready(function() {
-    $('#id_PTIDCode').change(function() {
-      const ptidCode = $(this).val();
-      const idNumber = $('#id_ID_Number').val(); // Assuming the ID number input has this ID
-      if (ptidCode) {
-        $.ajax({
-          url: "{% url 'get_clinic_code' %}",  // Define this URL in your urls.py
-          data: {'ptid_code': ptidCode},
-          dataType: 'json',
-          success: function(data) {
-            $('#id_Clinic_Code').val(data.clinic_code);  // Update the Clinic_Code field
-            $('#id_Clinic').val(data.clinic_name);  // Update the Clinic field with the correct key
-            generateEgaspId(ptidCode, idNumber); // Generate Egasp ID & clinic code with current values
-            generateClinicCodeGen(data.clinic_code, idNumber); // Generate cliniccodegen
-          }
-        });
-      } else {
-        $('#id_Clinic_Code').val('');  // Clear Clinic_Code if no PTIDCode is selected
-        $('#id_Clinic').val('');  // Clear Clinic if no PTIDCode is selected
-        $('#id_Egasp_Id').val(''); // Clear Egasp ID if no PTIDCode is selected
-        $('#id_cliniccodegen').val(''); // Clear cliniccodegen if no PTIDCode is selected
-      }
-    });
-  
-    // Listen for changes in the ID number field to update Egasp ID
-    $('#id_ID_Number').on('input', function() {
-      const idNumber = $(this).val();
-      const ptidCode = $('#id_PTIDCode').val(); // Get the currently selected PTIDCode
-      const clinicCode = $('#id_Clinic_Code').val(); // Get the currently selected Clinic_Code
-      generateEgaspId(ptidCode, idNumber); // Pass the ptidCode and idNumber
-      generateClinicCodeGen(clinicCode, idNumber); // Generate cliniccodegen
-    });
-  
-    function generateEgaspId(ptidCode, idNumber) {
-      if (ptidCode && idNumber) {
-        $('#id_Egasp_Id').val(ptidCode + idNumber); // Generate Egasp ID in the format PTIDCode-IDNumber
-      } else {
-        $('#id_Egasp_Id').val(''); // Clear Egasp ID if either value is missing
-      }
-    }
-  
-    function generateClinicCodeGen(clinicCode, idNumber) {
-      if (clinicCode && idNumber) {
-        $('#id_ClinicCodeGen').val(clinicCode + '-' + idNumber); // Set cliniccodegen in the format ClinicCode-IDNumber
-      } else {
-        $('#id_ClinicCodeGen').val(''); // Clear cliniccodegen if either value is missing
-      }
-    }
-  
-    // Update ars_contact and ars_email when Clinic_Staff is selected
-    $('#id_Laboratory_Staff').change(function() {
-      const labStaffId = $(this).val();
-      if (labStaffId) {
-        $.ajax({
-          url: "{% url 'get_clinic_staff_details' %}",  // Define this URL in your urls.py
-          data: {'lab_staff_id': labStaffId},
-          dataType: 'json',
-          success: function(data) {
-            $('#id_ars_contact').val(data.ClinStaff_Telnum);  // Update the ars_contact field
-            $('#id_ars_email').val(data.ClinStaff_EmailAdd);  // Update the ars_email field
-          }
-        });
-      } else {
-        $('#id_ars_contact').val('');  // Clear ars_contact if no Clinic_Staff is selected
-        $('#id_ars_email').val('');  // Clear ars_email if no Clinic_Staff is selected
-      }
-    });
-  });
-  </script> -->
-
-<script>
   document.getElementById('id_PermAdd_same_CurrAdd').addEventListener('change', function () {
       const isChecked = this.checked;
 
@@ -1717,8 +1647,9 @@ label.form-control-label{
           permanentCityField.value = '';
       }
   });
-</script>
+</script> -->
 
+<!-- Automatically calculate Age -->
 <script>
   function calculateAge() {
       const birthInput = document.getElementById('id_Birthdate').value;
@@ -1762,9 +1693,10 @@ label.form-control-label{
   document.getElementById('id_Consult_Date').addEventListener('change', calculateAge);
 </script>
 
+
 <!-- for all none fields -->
 <script>
-  // Utility to safely set dropdown value
+  // Utility to safely set dropdown value preserving previously saved items
   function setDropdownValue(field, value) {
     if (!field || field.tagName !== "SELECT") return;
 
@@ -1783,26 +1715,28 @@ label.form-control-label{
     const targetFields = fieldIds.map(id => document.getElementById(id));
 
     function toggleFields() {
-      const shouldDisable = triggerField && triggerField.value === disableValue;
+      if (!triggerField) return;
+
+      const shouldDisable = triggerField.value === disableValue;
 
       targetFields.forEach(field => {
         if (!field || field.tagName !== "SELECT") return;
 
         if (shouldDisable) {
-          setDropdownValue(field, defaultValue);  // Force default
+          // Only set default if empty
+          if (!field.value) setDropdownValue(field, defaultValue);
           field.disabled = false; // still editable if needed
         } else {
           field.disabled = false;
+          // Reset to blank only if it matches defaultValue
           if (field.value === defaultValue) {
-            setDropdownValue(field, "");  // Reset to blank
+            field.value = "";
           }
         }
       });
     }
 
-    // Run once after load
-    setTimeout(toggleFields, 100);
-
+    // Only trigger when the user changes the field
     if (triggerField) {
       triggerField.addEventListener("change", toggleFields);
     }
@@ -1855,6 +1789,8 @@ label.form-control-label{
     ], "Yes", "n/a");
   });
 </script>
+
+
 
 
 
@@ -1975,12 +1911,7 @@ label.form-control-label{
       }
     });
 
-
-
-
-
-
-    // ✅ ADD THIS HERE – triggers the change to fetch contact info when editing
+    // ✅ triggers the change to fetch contact info when editing
     if ($('#id_Laboratory_Staff').val()) {
       $('#id_Laboratory_Staff').trigger('change');
     }
@@ -2012,64 +1943,168 @@ label.form-control-label{
       }
     });
   });
-
-
 </script>
 
 
+<!-- Groups Cities by Province using AJAX -->
 <!-- <script>
-$(document).ready(function () {
-  const provinceSelect = $('#id_Current_Province');
-  const citySelect = $('#id_Current_City');
-  const permanentProvince = $('#id_Permanent_Province');
-  const permanentCity = $('#id_Permanent_City');
+$(function () {
+  const $curProv  = $('#id_Current_Province_fk');
+  const $curCity  = $('#id_Current_City_fk');
+  const $permProv = $('#id_Permanent_Province_fk');
+  const $permCity = $('#id_Permanent_City_fk');
 
-  function loadCities(provinceId, cityField, selectedCityId = null) {
+  function loadCities($prov, $city, savedCityId = null) {
+    const provinceId = $prov.val();
+    $city.empty().append($('<option>', { value: '', text: '*None' }));
+
     if (!provinceId) return;
 
     $.ajax({
       url: "{% url 'get_cities_by_province' %}",
-      data: { 'province_id': provinceId },
+      data: { province_id: provinceId },
       success: function (data) {
-        cityField.empty();
-
-        $.each(data.cities, function (index, city) {
-          const option = $('<option>').val(city.id).text(city.cityname);
-          if (String(city.id) === String(selectedCityId)) {
-            option.prop('selected', true);
-          }
-          cityField.append(option);
+        $.each(data.cities, function (_, city) {
+          $city.append($('<option>', { value: city.id, text: city.cityname }));
         });
+
+        // Restore saved city on first load
+        if (savedCityId) {
+          $city.val(savedCityId);
+        }
       }
     });
   }
 
-  // Province change events
-  provinceSelect.change(function () {
-    loadCities($(this).val(), citySelect);
-  });
+  // --- Province -> City binding (user interaction only) ---
+  $curProv.on('change', function(){ loadCities($curProv, $curCity); });
+  $permProv.on('change', function(){ loadCities($permProv, $permCity); });
 
-  permanentProvince.change(function () {
-    loadCities($(this).val(), permanentCity);
-  });
+  // --- On first load (edit mode) ---
+  const curSavedCity  = $curCity.val();
+  const permSavedCity = $permCity.val();
 
-  // --- Initial load for edit mode ---
-  const initProvinceId = provinceSelect.val();
-  const initCityId = citySelect.data('selected'); // ✅ pull from data attribute
-  if (initProvinceId && initCityId) {
-    loadCities(initProvinceId, citySelect, initCityId);
+  if ($curProv.val() && curSavedCity) {
+    loadCities($curProv, $curCity, curSavedCity);
   }
 
-  const initPermProv = permanentProvince.val();
-  const initPermCity = permanentCity.data('selected'); // ✅ pull from data attribute
-  if (initPermProv && initPermCity) {
-    loadCities(initPermProv, permanentCity, initPermCity);
+  if ($permProv.val() && permSavedCity) {
+    loadCities($permProv, $permCity, permSavedCity);
   }
 });
-
 </script> -->
 
 
+<!-- Groups Cities by Province using AJAX -->
+<script>
+$(function () {
+  const $curProv  = $('#id_Current_Province_fk');
+  const $curCity  = $('#id_Current_City_fk');
+  const $permProv = $('#id_Permanent_Province_fk');
+  const $permCity = $('#id_Permanent_City_fk');
+
+  function loadCities($prov, $city, savedCityId = null) {
+    const provinceId = $prov.val();
+    $city.empty().append($('<option>', { value: '', text: '*None' }));
+
+    if (!provinceId) return;
+
+    $.ajax({
+      url: "{% url 'get_cities_by_province' %}",
+      data: { province_id: provinceId },
+      success: function (data) {
+        $.each(data.cities, function (_, city) {
+          $city.append($('<option>', { value: city.id, text: city.cityname }));
+        });
+
+        // Restore saved city *after* cities are loaded
+        if (savedCityId) {
+          $city.val(savedCityId);
+        }
+      }
+    });
+  }
+
+  // --- Province -> City binding (user interaction only) ---
+  $curProv.on('change', function(){ loadCities($curProv, $curCity); });
+  $permProv.on('change', function(){ loadCities($permProv, $permCity); });
+
+  // --- On first load (edit mode) ---
+  const curSavedCity  = $curCity.val();
+  const permSavedCity = $permCity.val();
+
+  if ($curProv.val()) {
+    loadCities($curProv, $curCity, curSavedCity);
+  }
+
+  if ($permProv.val()) {
+    loadCities($permProv, $permCity, permSavedCity);
+  }
+});
+</script>
+
+
+
+
+<!-- copy current address to permanent address and also copy the current_city correctly -->
+<script>
+  document.getElementById('id_PermAdd_same_CurrAdd').addEventListener('change', function () {
+      const isChecked = this.checked;
+
+      const currentProvince = document.getElementById('id_Current_Province_fk').value;
+      const currentCity = document.getElementById('id_Current_City_fk').value;
+
+      const permanentProvinceField = document.getElementById('id_Permanent_Province_fk');
+      const permanentCityField = document.getElementById('id_Permanent_City_fk');
+
+      if (isChecked) {
+          // Set province and trigger change to load cities
+          permanentProvinceField.value = currentProvince;
+          if (typeof jQuery !== "undefined") {
+              $(permanentProvinceField).trigger('change');
+              // Wait for AJAX to finish and then set city
+              let tries = 0;
+              function setCityWhenReady() {
+                  tries++;
+                  if ([...permanentCityField.options].some(opt => opt.value == currentCity)) {
+                      permanentCityField.value = currentCity;
+                  } else if (tries < 10) {
+                      setTimeout(setCityWhenReady, 100);
+                  }
+              }
+              setCityWhenReady();
+          } else {
+              permanentCityField.value = currentCity;
+          }
+      } else {
+          permanentProvinceField.value = '';
+          permanentCityField.value = '';
+      }
+  });
+</script>
+
+
+<!-- <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const provinceSelect = document.getElementById("id_province");
+    const citySelect = document.getElementById("id_city");
+
+    provinceSelect.addEventListener("change", function () {
+        const provinceId = this.value;
+        fetch(`/ajax/load-cities/?province=${provinceId}`)
+            .then(response => response.json())
+            .then(data => {
+                citySelect.innerHTML = '<option value="">---------</option>';
+                data.forEach(city => {
+                    const option = document.createElement("option");
+                    option.value = city.id;
+                    option.textContent = city.name;
+                    citySelect.appendChild(option);
+                });
+            });
+    });
+});
+</script> -->
 
 {% endblock javascripts %}
 
