@@ -445,19 +445,21 @@
                     <td colspan="4" style="border-right: 1px solid gray;"><strong>Others:</strong></td>
                     <td colspan="4"></td>
                 </tr>
-                {% if isolate.GS_Others|default:''%}
+                {% if isolate.GS_Other_sp|default:''%}
                 <tr>
                     <td colspan="2" style="text-align: right;">{{isolate.GS_Others}}:</td>
                     <td colspan="2" style="border-right: 1px solid gray;">&nbsp;{{isolate.GS_Other_sp}}</td>
                     <td colspan="4"></td>
                 </tr>
-                {% elif isolate.GS_Others2|default:''%}
+                {% endif %}
+                {% if isolate.GS_Other_sp2|default:''%}
                  <tr>
                     <td colspan="2" style="text-align: right;">{{isolate.GS_Others2}}:</td>
                     <td colspan="2" style="border-right: 1px solid gray;">&nbsp;{{isolate.GS_Other_sp2}}</td>
                     <td colspan="4"></td>
                 </tr>
-                {% elif isolate.GS_Others3|default:''%}
+                {% endif %}
+                {% if isolate.GS_Other_sp3|default:''%}
                  <tr>
                     <td colspan="2" style="text-align: right;">{{isolate.GS_Others3}}:</td>
                     <td colspan="2" style="border-right: 1px solid gray;">&nbsp;{{isolate.GS_Other_sp3}}</td>

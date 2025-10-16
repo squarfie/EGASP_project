@@ -99,10 +99,12 @@
         <tr><td colspan="4"><strong>Epithelial Cells:</strong></td>  <td colspan="4" style="text-decoration: underline;">{{isolate.Epithelial_Cells}}</td></tr>
         <tr><td colspan="4"><strong>Gram Negative Intracellular Diplococci:</strong></td> <td colspan="4" style="text-decoration: underline;">{{isolate.Gram_Neg_Intracellular}}</td></tr>
         <tr><td colspan="4"><strong>Gram Negative Extracellular Diplococci:</strong></td><td colspan="4" style="text-decoration: underline;">{{isolate.Gram_Neg_Extracellular}}</td></tr>
-        <tr><td colspan="4"><strong>Others:</strong></td></tr>
+        {% if isolate.GS_Other_sp or isolate.GS_Other_sp2 or isolate.GS_Other_sp3 %}
+        <tr><td colspan="4"><strong>Others:</strong></td></tr>   
         {% if isolate.GS_Other_sp and isolate.GS_Other_sp != "" %}<tr><td colspan="4" >&nbsp;&nbsp;<strong><u>{{isolate.GS_Others}}</u></strong></td><td colspan="4" style="text-decoration: underline;">{{isolate.GS_Other_sp}}</td></tr> {% endif %}
         {% if isolate.GS_Other_sp2 and isolate.GS_Other_sp2 != "" %}<tr><td colspan="4" >&nbsp;&nbsp;<strong><u>{{isolate.GS_Others2}}</u></strong></td><td colspan="4" style="text-decoration: underline;">{{isolate.GS_Other_sp2}}</td></tr>{% endif %}
         {% if isolate.GS_Other_sp3 and isolate.GS_Other_sp3 != "" %}<tr><td colspan="4" >&nbsp;&nbsp;<strong><u>{{isolate.GS_Others3}}</u></strong></td><td colspan="4" style="text-decoration: underline;">{{isolate.GS_Other_sp3}}</td></tr>{% endif %}
+        {% endif %}
     </table>
 
     <br>
@@ -119,15 +121,16 @@
                 <tr>
                     <td colspan="2" style="text-align: center;">Organism:</td>
                     {% if isolate.Culture_Result == "Positive" %}
-                    <td colspan="6" style="text-align: left;"> <u> <i>Positive for Neisseria gonorrhoeae</i> after {{ isolate.Growth|safe }} hrs. of incubation</u></td> <br>
-                    
-                    {%else%}
-                    <td colspan="6" style="text-align: left;"><u>No <i>Neisseria gonorrhoeae</i> isolated after {{ isolate.Growth|safe }} hrs. of incubation </u></td> <br>
-                    
-                    {% endif %}
+                        {% if isolate.Growth %}
+                        <td colspan="6" style="text-align: left;"> <u> Positive for <i> Neisseria gonorrhoeae</i> after {{ isolate.Growth|safe }} hrs. of incubation</u></td> <br>   
+                        {% else %}
+                        <td colspan="6" style="text-align: left;"><u>No <i>Neisseria gonorrhoeae</i> isolated after {{ isolate.Growth|safe }} hrs. of incubation </u></td> <br>
+                        {% endif %}
+                    {% else %}
+                    <td colspan="6" style="text-align: left;"><u>No <i>Neisseria gonorrhoeae</i> isolated </u></td>
                 </tr>
                 <tr><td colspan="2"></td><td colspan="6" style="text-align: left;"><u>{{isolate.Growth_span_other}}</u></td></tr>
-                
+                {% endif %}
             </tbody>
     </table>
     <br>

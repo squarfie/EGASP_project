@@ -49,26 +49,36 @@
       <div class="col">
         <div class="card">
           <!-- Card header -->
-          <div class="card-header border-0">
-            <div class="row">
-              <div class="col md-6 d-flex justify-content-end">
-                <form id="search-input" class="navbar-search navbar-search-light form-inline mr-sm-3 " id="navbar-search-main">
-                  <div class="form-group mb-0">
-                    <div class="input-group input-group-alternative input-group-merge">
-                      <div class="input-group-prepend">
-                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <div class="card-header border-0">
+                  <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    
+                    <!-- Date Range Form (Left) -->
+                    <form method="get" action="{% url 'download_date_range_table' %}" 
+                          class="d-flex align-items-center flex-wrap gap-2 mb-2 mb-md-0">
+                      <label class="mb-0 me-2">From:&nbsp;</label>
+                      <input type="date" name="from_date" class="form-control form-control-sm me-2" style="width: auto;" required>
+                      <label class="mb-0 me-2">&nbsp;To:&nbsp;</label>
+                      <input type="date" name="to_date" class="form-control form-control-sm me-2" style="width: auto;" required>
+                      &nbsp;<button type="submit" class="btn btn-sm btn-primary">Download CSV</button>
+                    </form>
+
+                    <!-- Search Form (Right-Aligned) -->
+                    <form id="search-input" class="navbar-search navbar-search-light d-flex align-items-center" 
+                          onsubmit="return false;">
+                      <div class="input-group input-group-alternative input-group-merge">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        </div>
+                        <input class="form-control" placeholder="Search" type="text" onkeyup="searchTable()">
                       </div>
-                      <input class="form-control" placeholder="Search" type="text" onkeyup="searchTable()">
-                    </div>
+                      <button type="button" class="close" data-action="search-close" data-target="#navbar-search-main" aria-label="Close">
+                                    <span aria-hidden="true">x</span>
+                      </button>      
+                    </form>
+
                   </div>
-                  <button type="button" class="close" data-action="search-close" data-target="#navbar-search-main" aria-label="Close">
-                    <span aria-hidden="true">x</span>
-                  </button>
-                  
-                </form>
-              </div>
-            </div>
-          </div>
+                </div>
+
           <div class="card-body">
           <!-- Light table -->
           <div class="table-responsive" style="max-height: 500px;  overflow-y: auto; overflow-x: auto;">
@@ -194,8 +204,8 @@
             </table>
             </div>
 
-<!-- Add this modal HTML at the end of your template (tables.html) -->
-<form method="POST">
+<!-- Delete Modal -->
+<!-- <form method="POST">
   {% csrf_token %}
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
@@ -215,87 +225,148 @@
       </div>
     </div>
   </div>
+</div> -->
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title text-white" id="deleteModalLabel">
+          <i class="fa fa-exclamation-triangle mr-2"></i>Delete Confirmation
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="POST" id="deleteForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="text-center py-3">
+            <i class="fa fa-trash text-danger" style="font-size: 3rem;"></i>
+            <h4 class="mt-3">Are you sure?</h4>
+            <p class="text-muted">This action cannot be undone. The record will be permanently deleted.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <i class="fas fa-times mr-1"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-danger" id="confirmDelete">
+            <i class="fa fa-trash mr-1"></i>Delete Record
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 </form>
-          </div>
-          <!-- Card footer -->
-          <div class="card-footer py-4">
-            <nav aria-label="...">
-              <ul class="pagination justify-content-center mb-0">
-              <!-- Previous Page -->
-                      {% if page_obj.has_previous %}
-                      <li class="page-item active">
-                        <a class="page-link" href="?page=1" tabindex="-1">
-                          <i class="fas fa-angle-double-left"></i>
-                          <span class="sr-only">First</span>
-                        </a>
-                      </li>
-                      <li class="page-item active">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
-                          <i class="fas fa-angle-left"></i>
-                          <span class="sr-only">Previous</span>
-                        </a>
-                      </li>
-                    {% else %}
-                      <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">
-                          <i class="fas fa-angle-double-left"></i>
-                          <span class="sr-only">First</span>
-                        </a>
-                      </li>
-                      <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">
-                          <i class="fas fa-angle-left"></i>
-                          <span class="sr-only">Previous</span>
-                        </a>
-                      </li>
-                    {% endif %}
+         </div>
+        <!-- Card Footer with Pagination -->
+    <div class="card-footer py-4 bg-light">
+      <div class="row align-items-center">
+        <!-- Go To Page Form -->
+        <div class="col-md-4">
+          <form method="get" class="form-inline">
+            <label class="mr-2 mb-0 text-primary">Go to page:</label>
+            <input type="number" name="page"
+                   min="1"
+                   max="{{ page_obj.paginator.num_pages }}"
+                   value="{{ page_obj.number }}"
+                   class="form-control form-control-sm mr-2"
+                   style="width: 70px;">
+            <button type="submit" class="btn btn-sm btn-primary">
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </form>
+        </div>
 
-                    <!-- Current Page -->
-                    <!-- <li class="page-item active"> -->
-                     <!-- <p>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p> -->
-                      <!-- <a class="page-link" href="#">{{ page_obj.number }}</a> -->
-                    <!-- </li> -->
+        <!-- Page Info -->
+        <div class="col-md-4 text-center">
+          <span class="text-primary">
+            Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
+          </span>
+        </div>
 
+        <!-- Pagination Controls -->
+        <div class="col-md-4">
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-end mb-0">
+              <!-- First Page -->
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page=1" title="First page">
+                    <i class="fas fa-angle-double-left"></i>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                </li>
+              {% endif %}
 
-                    <!-- Next Page -->
-                    {% if page_obj.has_next %}
-                      <li class="page-item active" >
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">
-                          <i class="fas fa-angle-right"></i>
-                          <span class="sr-only">Next</span>
-                        </a>
-                      </li>
-                      <li class="page-item active">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
-                          <i class="fas fa-angle-double-right"></i>
-                          <span class="sr-only">Last</span>
-                        </a>
-                      </li>
-                    {% else %}
-                      <li class="page-item disabled">
-                        <a class="page-link" href="#">
-                          <i class="fas fa-angle-right"></i>
-                          <span class="sr-only">Next</span>
-                        </a>
-                      </li>
-                      <li class="page-item disabled">
-                        <a class="page-link" href="#">
-                          <i class="fas fa-angle-double-right"></i>
-                          <span class="sr-only">Last</span>
-                        </a>
-                      </li>
-                    {% endif %}
-                </ul>
-                    <!-- Current Page -->
-                    <div class="d-flex justify-content-center mb-0" style="margin-top: 15px;">
-                      <div class="row ">
-                      <a href="#" style="font-size: small; text-align: center;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a>
-                      </div>
-                  </div>
-            </nav>
-          </div>
+              <!-- Previous -->
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}" title="Previous page">
+                    <i class="fas fa-angle-left"></i>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                </li>
+              {% endif %}
+
+              <!-- Page Numbers -->
+              {% for num in page_obj.paginator.page_range %}
+                {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                  {% if num == page_obj.number %}
+                    <li class="page-item active">
+                      <span class="page-link">{{ num }}</span>
+                    </li>
+                  {% else %}
+                    <li class="page-item">
+                      <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+
+              <!-- Next -->
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}" title="Next page">
+                    <i class="fas fa-angle-right"></i>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                </li>
+              {% endif %}
+
+              <!-- Last Page -->
+              {% if page_obj.number < page_obj.paginator.num_pages %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" title="Last page">
+                    <i class="fas fa-angle-double-right"></i>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
         </div>
       </div>
     </div>
