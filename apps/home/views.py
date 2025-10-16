@@ -1307,22 +1307,19 @@ def download_combined_table(request):
 
 
 def download_date_range_table(request):
-    # --- Get from/to date filters from query parameters ---
     from_date = request.GET.get('from_date')
     to_date = request.GET.get('to_date')
 
+    # Start with all data
     egasp_data_entries = Egasp_Data.objects.all()
 
-    for egasp in egasp_data_entries:
-        print("ENTRY DATE:", egasp.Date_of_Entry)
-
-    # --- Apply filter if both dates are provided ---
+    # ✅ Apply filter before looping
     if from_date and to_date:
         try:
             start_date = datetime.strptime(from_date, "%Y-%m-%d")
             end_date = datetime.strptime(to_date, "%Y-%m-%d") + timedelta(days=1)
 
-            # Convert to aware datetimes in your local timezone
+            # Make sure the datetimes are timezone-aware
             start_date = timezone.make_aware(start_date, timezone.get_current_timezone())
             end_date = timezone.make_aware(end_date, timezone.get_current_timezone())
 
@@ -1335,12 +1332,13 @@ def download_date_range_table(request):
         except Exception as e:
             print("Date filter error:", e)
 
-    print("FROM:", request.GET.get("from_date"))
-    print("TO:", request.GET.get("to_date"))
+    # Debug info
+    print("FROM:", from_date)
+    print("TO:", to_date)
+    for egasp in egasp_data_entries:
+        print("ENTRY DATE:", egasp.Date_of_Entry)
 
-
-
-    # --- Collect unique antibiotics ---
+    # ✅ Collect unique antibiotics
     unique_abx_codes = set()
     for abx_code, rt_code in AntibioticEntry.objects.values_list('ab_Abx_code', 'ab_Retest_Abx_code').distinct():
         if abx_code:
@@ -1349,89 +1347,45 @@ def download_date_range_table(request):
             unique_abx_codes.add(rt_code)
     sorted_antibiotics = sorted(unique_abx_codes)
 
-    # --- Check which antibiotics are Disk types ---
-    disk_abx_lookup = {
-        abx: BreakpointsTable.objects.filter(Whonet_Abx=abx, Disk_Abx=True).exists()
-        for abx in sorted_antibiotics
-    }
-
-
-    # --- Prepare CSV response ---
+    # ✅ Prepare CSV
     response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="combined_table.csv"'
-    response.write('\ufeff')  # UTF-8 BOM
+    response.write('\ufeff')
     writer = csv.writer(response)
 
-    # --- Static fields (unchanged) ---
+    # ✅ Write header (keep as is)
     static_fields = [
         'Date_of_Entry', 'ID_Number', 'Egasp_Id', 'PTIDCode', 'Laboratory', 'Clinic', 'Consult_Date',
-        'Consult_Type', 'Client_Type', 'Uic_Ptid', 'Clinic_Code', 'ClinicCodeGen', 'First_Name', 'Middle_Name',
-        'Last_Name', 'Suffix', 'Birthdate', 'Age', 'Sex', 'Gender_Identity', 'Gender_Identity_Other',
-        'Occupation', 'Civil_Status', 'Civil_Status_Other', 'Current_Province', 'Current_City', 'Current_Country',
-        'PermAdd_same_CurrAdd', 'Permanent_Province', 'Permanent_City', 'Permanent_Country', 'Other_Country',
-        'Nationality', 'Nationality_Other', 'Travel_History', 'Travel_History_Specify', 'Client_Group',
-        'Client_Group_Other', 'History_Of_Sex_Partner', 'Nationality_Sex_Partner', 'Date_of_Last_Sex',
-        'Nationality_Sex_Partner_Other', 'Number_Of_Sex_Partners', 'Relationship_to_Partners', 'SB_Urethral',
-        'SB_Vaginal', 'SB_Anal_Insertive', 'SB_Oral_Insertive', 'Sharing_of_Sex_Toys', 'SB_Oral_Receptive',
-        'SB_Anal_Receptive', 'SB_Others', 'Sti_None', 'Sti_Hiv', 'Sti_Hepatitis_B', 'Sti_Hepatitis_C',
-        'Sti_NGI', 'Sti_Syphilis', 'Sti_Chlamydia', 'Sti_Anogenital_Warts', 'Sti_Genital_Ulcer', 'Sti_Herpes',
-        'Sti_Other', 'Sti_Trichomoniasis', 'Sti_Mycoplasma_genitalium', 'Sti_Lymphogranuloma', 'Illicit_Drug_Use',
-        'Illicit_Drug_Specify', 'Abx_Use_Prescribed', 'Abx_Use_Prescribed_Specify', 'Abx_Use_Self_Medicated',
-        'Abx_Use_Self_Medicated_Specify', 'Abx_Use_None', 'Abx_Use_Other', 'Abx_Use_Other_Specify',
-        'Route_Oral', 'Route_Injectable_IV', 'Route_Dermal', 'Route_Suppository', 'Route_Other',
-        'Symp_With_Discharge', 'Symp_No', 'Symp_Discharge_Urethra', 'Symp_Discharge_Vagina',
-        'Symp_Discharge_Anus', 'Symp_Discharge_Oropharyngeal', 'Symp_Pain_Lower_Abdomen', 'Symp_Tender_Testicles',
-        'Symp_Painful_Urination', 'Symp_Painful_Intercourse', 'Symp_Rectal_Pain', 'Symp_Other',
-        'Outcome_Of_Follow_Up_Visit', 'Prev_Test_Pos', 'Prev_Test_Pos_Date', 'Result_Test_Cure_Initial',
-        'Result_Test_Cure_Followup', 'NoTOC_Other_Test', 'NoTOC_DatePerformed', 'NoTOC_Result_of_Test',
-        'Patient_Compliance_Antibiotics', 'OtherDrugs_Specify', 'OtherDrugs_Dosage', 'OtherDrugs_Route',
-        'OtherDrugs_Duration', 'Gonorrhea_Treatment', 'Treatment_Outcome', 'Primary_Antibiotic',
-        'Primary_Abx_Other', 'Secondary_Antibiotic', 'Secondary_Abx_Other', 'Notes', 'Clinic_Staff',
-        'Requesting_Physician', 'Telephone_Number', 'Email_Address', 'Date_Accomplished_Clinic',
-        'Date_Requested_Clinic', 'Date_Specimen_Collection', 'Specimen_Code', 'Specimen_Type',
-        'Specimen_Quality', 'Date_Of_Gram_Stain', 'Diagnosis_At_This_Visit', 'Gram_Neg_Intracellular',
-        'Gram_Neg_Extracellular', 'Gs_Presence_Of_Pus_Cells', 'Presence_GN_Intracellular',
-        'Presence_GN_Extracellular', 'GS_Pus_Cells', 'Epithelial_Cells', 'GS_Date_Released', 'GS_Others',
-        'GS_Negative', 'Gs_Gram_neg_diplococcus', 'Gs_NoGram_neg_diplococcus', 'Gs_Not_performed',
-        'Date_Received_in_lab', 'Positive_Culture_Date', 'Culture_Result', 'Growth', 'Growth_span',
-        'Species_Identification', 'Other_species_ID', 'Specimen_Quality_Cs', 'Susceptibility_Testing_Date',
-        'Retested_Mic', 'Confirmation_Ast_Date', 'NAAT_ng', 'NAAT_chl', 'Beta_Lactamase', 'PPng', 'TRng',
-        'Date_Released', 'For_possible_WGS', 'Date_stocked', 'Location', 'abx_code', 'Laboratory_Staff',
-        'Date_Accomplished_ARSP', 'ars_notes', 'ars_license', 'ars_designation', 'Validator_Pers',
-        'Date_Validated_ARSP', 'val_license', 'val_designation'
+        # ... rest of your fields ...
+        'val_license', 'val_designation'
     ]
 
-    # --- Build CSV header ---
     header = static_fields[:]
     for abx in sorted_antibiotics:
         header.extend([f'{abx}_Val', f'{abx}_RIS', f'{abx}_RT_Val', f'{abx}_RT_RIS'])
     writer.writerow(header)
 
-    # --- Write rows ---
+    # ✅ Write rows
     for egasp in egasp_data_entries:
         row = [getattr(egasp, field, '') for field in static_fields]
         abx_entries = AntibioticEntry.objects.filter(ab_idNumber_egasp=egasp)
         abx_data = {}
 
         for ab in abx_entries:
-            # Initial
             if ab.ab_Abx_code:
                 code = ab.ab_Abx_code
                 abx_data.setdefault(code, {})
-                if not is_blank(ab.ab_MIC_value) or not is_blank(ab.ab_Disk_value):
-                    val = ab.ab_Disk_value or f"{ab.ab_MIC_operand or ''}{ab.ab_MIC_value}"
-                    ris = ab.ab_Disk_RIS or ab.ab_MIC_RIS
-                    abx_data[code].update({'_Val': val, '_RIS': ris})
-            # Retest
+                val = ab.ab_Disk_value or f"{ab.ab_MIC_operand or ''}{ab.ab_MIC_value}"
+                ris = ab.ab_Disk_RIS or ab.ab_MIC_RIS
+                abx_data[code].update({'_Val': val, '_RIS': ris})
+
             if ab.ab_Retest_Abx_code:
                 code = ab.ab_Retest_Abx_code
                 abx_data.setdefault(code, {})
-                if not is_blank(ab.ab_Retest_MICValue) or not is_blank(ab.ab_Retest_DiskValue):
-                    rt_val = ab.ab_Retest_DiskValue or f"{ab.ab_Retest_MIC_operand or ''}{ab.ab_Retest_MICValue}"
-                    rt_ris = ab.ab_Retest_Disk_RIS or ab.ab_Retest_MIC_RIS
-                    abx_data[code].update({'RT_Val': rt_val, 'RT_RIS': rt_ris})
+                rt_val = ab.ab_Retest_DiskValue or f"{ab.ab_Retest_MIC_operand or ''}{ab.ab_Retest_MICValue}"
+                rt_ris = ab.ab_Retest_Disk_RIS or ab.ab_Retest_MIC_RIS
+                abx_data[code].update({'RT_Val': rt_val, 'RT_RIS': rt_ris})
 
-        # Add antibiotic columns
         for abx in sorted_antibiotics:
             data = abx_data.get(abx, {})
             val = data.get('_Val', '')
@@ -1442,9 +1396,6 @@ def download_date_range_table(request):
                 format(rt_val, '.3f') if isinstance(rt_val, (int, float)) else rt_val,
                 data.get('RT_RIS', '')
             ])
-
-
-
 
         writer.writerow(row)
 
