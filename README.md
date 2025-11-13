@@ -1,6 +1,8 @@
 # EGASP Project
 This project is the EGASP Database. Below is the guide to set up the project on your local machine.
 
+# use of browsers, Chrome, Firefox or equivalent is recommended 
+
 # Getting Started
 
 
@@ -251,6 +253,8 @@ Local Machine: http://127.0.0.1:8000/
 Remote Server: http://<your_server_ip_or_domain>
             e.g. http://10.10.103.54:8090/
 
+
+
 8. Optional Steps
 Monitoring Logs
 
@@ -340,3 +344,109 @@ AntibioticEntry.objects.filter(ab_idNumber_egasp__isnull=True).count()
 Now go back to your app and trigger the Download Combined Table function.
 
 Since the AntibioticEntry records are now properly connected to Egasp_Data, the antibiotic fields should now appear in the CSV output as expected.
+
+
+# Recommended Browser
+
+For optimal performance, it is recommended to use any modern, up-to-date version of Chrome, Firefox, Brave, or other equivalent browsers when accessing the system.
+
+Note: The system uses AJAX and JavaScript features that may not function properly on certain browsers.
+Please refer to the “List of Browsers with Possible Issues” for more details.
+
+
+# List of Browsers with Possible Issues
+
+(Feel free to add your browser here if the system behaves unexpectedly while using it.)
+
+1. Microsoft Edge
+
+Some AJAX requests or JavaScript functions may not behave as expected due to Edge-specific behaviors or security settings.
+
+<details> <summary><strong>Microsoft Edge – Troubleshooting Guide</strong></summary> <br>
+1. Clear Browser Cache
+
+Edge may load outdated JavaScript files.
+
+Press Ctrl + Shift + Delete
+
+Clear Cached images and files and Cookies and site data
+
+Refresh the page
+
+2. Disable Browser Extensions
+
+Extensions (ad blockers, privacy tools, script blockers) can interfere with AJAX requests.
+
+Go to Settings → Extensions
+
+Temporarily disable all extensions
+
+Test the system again
+
+3. Check the Developer Console for Errors
+
+Use the console to identify what’s failing.
+
+Press F12 → open Console
+
+Trigger your search or function
+
+Look for:
+
+JavaScript errors
+
+CORS/CSRF errors
+
+Blocked scripts
+
+Mixed-content warnings
+
+Failed AJAX requests
+
+4. Review the Network Tab
+
+Confirm whether the AJAX request is being blocked.
+
+Press F12 → open Network
+
+Trigger the search
+
+Check for:
+
+Requests marked (blocked)
+
+Status codes 403, 404, 500
+
+CORS or security warnings
+
+5. Ensure JavaScript Is Enabled
+
+Go to Settings → Cookies and site permissions → JavaScript
+
+Set JavaScript to Allowed
+
+6. Adjust Tracking Prevention
+
+Edge’s tracking prevention may block certain requests.
+
+Go to Settings → Privacy, search, and services
+
+Set Tracking prevention to Balanced (or temporarily Off)
+
+7. Use HTTPS
+
+Edge may block AJAX calls if the site uses mixed content (HTTPS page with HTTP requests).
+
+Access the system via https://
+
+Ensure all AJAX endpoints also use https://
+
+8. Try InPrivate Mode
+
+This disables extensions and uses a clean cache environment.
+
+Press Ctrl + Shift + N
+
+Open the system and test again
+
+</details>
