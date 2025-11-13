@@ -124,10 +124,10 @@
                         {% if isolate.Growth %}
                         <td colspan="6" style="text-align: left;"> <u> Positive for <i> Neisseria gonorrhoeae</i> after {{ isolate.Growth|safe }} hrs. of incubation</u></td> <br>   
                         {% else %}
-                        <td colspan="6" style="text-align: left;"><u>No <i>Neisseria gonorrhoeae</i> isolated after {{ isolate.Growth|safe }} hrs. of incubation </u></td> <br>
+                        <td colspan="6" style="text-align: left;"><u>No <i>Neisseria gonorrhoeae</i> isolated </u></td> <br>
                         {% endif %}
                     {% else %}
-                    <td colspan="6" style="text-align: left;"><u>No <i>Neisseria gonorrhoeae</i> isolated </u></td>
+                     <td colspan="6" style="text-align: left;"><u>No <i>Neisseria gonorrhoeae</i> isolated after {{ isolate.Growth|safe }} hrs. of incubation </u></td> <br>
                 </tr>
                 <tr><td colspan="2"></td><td colspan="6" style="text-align: left;"><u>{{isolate.Growth_span_other}}</u></td></tr>
                 {% endif %}
