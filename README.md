@@ -1,7 +1,6 @@
 # EGASP Project
 This project is the EGASP Database. Below is the guide to set up the project on your local machine.
 
-# use of browsers, Chrome, Firefox or equivalent is recommended 
 
 # Getting Started
 
