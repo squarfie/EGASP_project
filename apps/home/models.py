@@ -129,7 +129,7 @@ class Egasp_Data(models.Model):
     Illicit_Drug_Use_Choices=(
         ('',''),
         ('Drug Use, Current', 'Drug Use, Current'),
-        ('Drug Use, past 30 days', 'Drug Use, >past(30 days)'),
+        ('Drug Use, past 30 days', 'Drug Use, past(>30 days)'),
         ('No Drug Use', 'No Drug Use'),
         ('No Answer', 'No Answer')
     )
@@ -175,7 +175,9 @@ class Egasp_Data(models.Model):
         ('Partial Treatment Completed','Partial Treatment Completed'),
         ('No Treatment-patient refused', 'No Treatment-patient refused'),
         ('No Treatment-patient didnt come back', 'No Treatment-patient didnt come back' ),
-        ('No Answer', 'No Answer')
+        ('No Answer', 'No Answer'),
+        ('Not Treated','Not Treated'),
+        ('Not Treated-referred to physician','Not Treated-referred to physician')
     )
     Primary_Antibiotics=(
         ('None', 'None'),
@@ -405,6 +407,7 @@ class Egasp_Data(models.Model):
     #treatment information
     Gonorrhea_Treatment = models.CharField(max_length=100, choices=Gonnorhea_Treatment_Choice, default="")
     Treatment_Outcome = models.CharField(max_length=100, choices=Treatment_Outcome_Choice, default="")
+    Treatment_Outcome_Other = models.CharField(max_length=255,blank=True, default="n/a")
     Primary_Antibiotic = models.CharField(max_length=100, choices=Primary_Antibiotics, default="None")
     Primary_Abx_Other = models.CharField(max_length=100,blank=True, default="n/a")
     Secondary_Antibiotic = models.CharField(max_length=100, choices=Secondary_Antibiotics, default="None")
@@ -529,6 +532,7 @@ class Meta:
                 models.Index(fields=['Last_Name']),  # Index for field4
                 # add more indexes as needed
             ]
+
 
 class ClinicData(models.Model):
     PTIDCode=models.CharField(max_length=2, blank=True, unique=True)

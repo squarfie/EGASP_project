@@ -193,6 +193,7 @@ def crf_data(request):
                 if retest_disk_value or retest_mic_value:
                     retest_entry = AntibioticEntry.objects.create(
                         ab_idNumber_egasp=egasp_instance,
+                        ab_EgaspId=egasp_instance.Egasp_Id,
                         ab_Retest_Abx_code=retest_abx_code,  
                         ab_Retest_DiskValue=int(retest_disk_value) if retest_disk_value and retest_disk_value.strip().isdigit() else None,
                         ab_Retest_MICValue=retest_mic_value or None,
@@ -395,6 +396,7 @@ def edit_data(request, id):
                     ab_idNumber_egasp=egasp_instance,
                     ab_Retest_Abx_code=retest_abx_code,
                     defaults={
+                        "ab_EgaspId" :egasp_instance.Egasp_Id,
                         "ab_Retest_DiskValue": retest_disk_value,
                         "ab_Retest_MICValue": retest_mic_value or None,
                         "ab_Retest_MIC_operand": retest_mic_operand,

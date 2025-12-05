@@ -85,7 +85,16 @@
            <table class="table align-items-center table-flush" style="border-collapse: collapse; margin: 0%; padding: 0%;">
               <thead class="thead-light" style="text-align: center;">
                 <tr>
+                  <th>
+                    <a href="?sort=id&order={% if current_sort == 'id' and current_order == 'asc' %}desc{% else %}asc{% endif %}">
+                        #
+                        {% if current_sort == 'id' %}
+                          {% if current_order == 'asc' %}▲{% else %}▼{% endif %}
+                        {% endif %}
+                      </a>
+                  </th>
                   <th scope="col"> EDIT</th>
+                  
                   <th>
                       <a href="?sort=Egasp_Id&order={% if current_sort == 'Egasp_Id' and current_order == 'asc' %}desc{% else %}asc{% endif %}">
                         Identification
@@ -125,12 +134,14 @@
               <tbody class="list">
                 {% for isolate in page_obj %}
                <tr>
+                <td style="font-size: 10px;">{{isolate.id}}</td>
                   <td>
                   <a href="{%url 'edit_data' isolate.id %}" class="text-success"> <i class="fa fa-pencil-alt" aria-hidden="true"></i> &nbspEdit</a> <span style="display: block; line-height: 8px;"><br></span>
                   <a href="#" class="text-danger delete-btn" data-toggle="modal" data-target="#deleteModal" data-url="{% url 'delete_data' isolate.id %}">
                         <i class="fa fa-trash" aria-hidden="true"></i> &nbspDelete</a> <span style="display: block; line-height: 8px;"><br></span>
                   
                   </td>
+                  
                   <td >
                       EGASP ID: &nbsp; <strong>{{isolate.Egasp_Id}}</strong><br> 
                       UIC PTID: &nbsp;<strong>  {{isolate.Uic_Ptid}}</strong> <br>
@@ -146,7 +157,7 @@
                   </td>
                   <td>{{isolate.Date_of_Entry|date:"F, d, Y" }}</td>
                   
-                  <td>
+                  <!-- <td>
                     {% for antibiotic_entry in isolate.antibiotic_entries.all %}
                             {% if antibiotic_entry.ab_Disk_value %}
                                 <strong>{{ antibiotic_entry.ab_Antibiotic }}</strong>  
@@ -190,7 +201,91 @@
                             {% endfor %}
                         
                   </td>
-                  
+                   -->
+
+                   <td>
+                          {% for antibiotic in isolate.antibiotic_entries.all %}
+                              {% if antibiotic.ab_Disk_value or antibiotic.ab_MIC_value %}
+                                  
+                                  <strong>{{ antibiotic.ab_Antibiotic }}</strong> (
+
+                                  {# ---------- DISK BLOCK ---------- #}
+                                  {% if antibiotic.ab_Disk_value %}
+                                      Disk: <strong>{{ antibiotic.ab_Disk_value }}</strong>
+                                  {% endif %}
+                                  {% if antibiotic.ab_Disk_RIS%}
+                                      <strong class="text-danger">{{ antibiotic.ab_Disk_RIS }}</strong>
+                                  {% endif %}
+
+                                  {# Add comma if both Disk & MIC exist #}
+                                  {% if antibiotic.ab_Disk_value and antibiotic.ab_MIC_value %}
+                                      , 
+                                  {% endif %}
+                            
+
+                                  {# ---------- MIC BLOCK ---------- #}
+                                  {% if antibiotic.ab_MIC_value %}
+                                      MIC: 
+                                      <strong>
+                                          {% if antibiotic.ab_MIC_operand %}
+                                              {{ antibiotic.ab_MIC_operand }}
+                                          {% endif %}
+                                          {% if antibiotic.ab_MIC_value %}
+                                          {{ antibiotic.ab_MIC_value }}
+                                           {% endif %}
+                                      </strong>
+                                      {% if antibiotic.ab_MIC_RIS%}
+                                      <strong class="text-danger">{{ antibiotic.ab_MIC_RIS }}</strong>
+                                      {% endif %}
+                                      {% if antibiotic.ab_AlertMIC %}
+                                          &nbsp; <strong class="text-info">Alert:</strong>
+                                          {{ antibiotic.ab_Alert_val }}
+                                      {% endif %}
+                                  {% endif %}
+
+                                  )
+                                  <br>
+                              {% endif %}
+                          {% empty %}
+                              No Antibiotic Data
+                          {% endfor %}
+
+                         <!-- Retest section -->
+                          {% for retest in isolate.antibiotic_entries.all %}
+                              {% if retest.ab_Retest_DiskValue or retest.ab_Retest_MICValue %}
+
+                                  <strong>{{ retest.ab_Retest_Antibiotic }}</strong> (
+
+                                  {% if retest.ab_Retest_DiskValue %}
+                                      Retest Disk: <strong>{{ retest.ab_Retest_DiskValue }}</strong>
+                                      <strong class="text-danger">{{ retest.ab_Retest_Disk_RIS }}</strong>
+                                  {% endif %}
+
+                                  {% if retest.ab_Retest_DiskValue and retest.ab_Retest_MICValue %}, {% endif %}
+
+                                  {% if retest.ab_Retest_MICValue %}
+                                      Retest MIC:
+                                      <strong>
+                                          {% if retest.ab_Retest_MIC_operand %}
+                                              {{ retest.ab_Retest_MIC_operand }}
+                                          {% endif %}
+                                          {{ retest.ab_Retest_MICValue }}
+                                      </strong>
+                                      <strong class="text-danger">{{ retest.ab_Retest_MIC_RIS }}</strong>
+
+                                      {% if retest.ab_Retest_AlertMIC %}
+                                          &nbsp; <strong class="text-info">Alert:</strong>
+                                          {{ retest.ab_Retest_Alert_val }}
+                                      {% endif %}
+                                  {% endif %}
+                                  )
+                                  <br>
+                              {% endif %}
+                          {% empty %}
+                              No Retest Done
+                          {% endfor %}
+                      </td>
+
                   <td>
                     <a href="{%url 'generate_pdf' isolate.id %}" class="text-info" target="_blank"> <i class="fa fa-print" aria-hidden="true"></i> Lab Result </a><span style="display: block; line-height: 8px;"><br></span>
                     <a href="{% url 'generate_gs' isolate.id %}"  class="text-info" target="_blank"> <i class="fa fa-heartbeat"></i> Gram Stain

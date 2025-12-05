@@ -58,6 +58,7 @@
     <br>
     <!-- Patient Information -->
     <table>
+        
         <tr>
             <td colspan="2" style="text-align: left;"><strong>UIC/PTID:</strong></td>
             <td colspan="2" >{{isolate.Uic_Ptid}}</td>
@@ -66,27 +67,32 @@
         </tr>
         <tr>
             <td colspan="2" style="text-align: left;"><strong>Last Name:</strong></td>
-            <td colspan="2" >{{isolate.Last_Name}}</td>
+            <td colspan="2" >{{isolate.Last_Name|default:""}}</td>
             <td colspan="2" style="text-align: left;"><strong>Specimen Date:</strong></td>
-            <td colspan="2">{{isolate.Date_Specimen_Collection}}</td>
+            <td colspan="2">{{isolate.Date_Specimen_Collection|default:""}}</td>
         </tr>
         <tr>
             <td colspan="2" style="text-align: left;"><strong>First Name:</strong></td>
-            <td colspan="2" >{{isolate.First_Name}}</td>
+            <td colspan="2" >{{isolate.First_Name|default:""}}</td>
             <td colspan="2" style="text-align: left;"><strong>Date Received:</strong></td>
-            <td colspan="2">{{isolate.Date_Received_in_lab}}</td>
+            <td colspan="2">{{isolate.Date_Received_in_lab|default:""}}</td>
         </tr>
         <tr>
             <td colspan="2" style="text-align: left;"><strong>Middle Name:</strong></td>
-            <td colspan="2" >{{isolate.Middle_Name}}</td>
+            <td colspan="2" >{{isolate.Middle_Name|default:""}}</td>
             <td colspan="2" style="text-align: left;"><strong>Specimen Type:</strong></td>
-            <td colspan="2">{{isolate.Specimen_Type}}</td>
+            <td colspan="2">
+                {% if isolate.Specimen_Type and isolate.Specimen_Type|lower != "n/a" and isolate.Specimen_Type|lower != "none" %}
+                    {{ isolate.Specimen_Type }}
+                {% endif %}
+            </td>
+
         </tr>
         <tr>
             <td colspan="2" style="text-align: left;"><strong>Age:</strong></td>
-            <td colspan="2">{{isolate.Age}}</td>
+            <td colspan="2">{{isolate.Age|default:""}}</td>
             <td colspan="2" style="text-align: left;"><strong>Sex:</strong></td>
-            <td colspan="2">{{isolate.Sex}}</td>
+            <td colspan="2">{{isolate.Sex|default:""}}</td>
         </tr>
     </table>
     <br>
@@ -95,15 +101,23 @@
     <table >
         <tr><td style="text-align: left; font-size: 14px; padding-top: 10px;" class="details" colspan="8" ><h5>GRAM STAIN RESULT</h5></td></tr>
         <tr></tr>
-        <tr><td colspan="4"><strong> Pus Cells:</strong></td><td colspan="4" style="text-decoration: underline;">{{isolate.GS_Pus_Cells}}</td></tr>
-        <tr><td colspan="4"><strong>Epithelial Cells:</strong></td>  <td colspan="4" style="text-decoration: underline;">{{isolate.Epithelial_Cells}}</td></tr>
-        <tr><td colspan="4"><strong>Gram Negative Intracellular Diplococci:</strong></td> <td colspan="4" style="text-decoration: underline;">{{isolate.Gram_Neg_Intracellular}}</td></tr>
-        <tr><td colspan="4"><strong>Gram Negative Extracellular Diplococci:</strong></td><td colspan="4" style="text-decoration: underline;">{{isolate.Gram_Neg_Extracellular}}</td></tr>
+        <tr><td colspan="4"><strong> Pus Cells:</strong></td><td colspan="4" style="text-decoration: underline;">
+            {%if isolate.GS_Pus_Cells and isolate.GS_Pus_Cells|lower != "n/a" and isolate.GS_Pus_Cells|lower != "none"%}{{isolate.GS_Pus_Cells}}{%endif%}
+        </td></tr>
+        <tr><td colspan="4"><strong>Epithelial Cells:</strong></td>  <td colspan="4" style="text-decoration: underline;">
+            {%if isolate.Ephithelial_Cells and isolate.Ephithelial_Cells|lower != "n/a" and isolate.Ephithelial_Cells|lower != "none"%} {{isolate.Epithelial_Cells}} {%endif%}
+        </td></tr>
+        <tr><td colspan="4"><strong>Gram Negative Intracellular Diplococci:</strong></td> <td colspan="4" style="text-decoration: underline;">
+        {%if isolate.Gram_Neg_Intracellular and isolate.Gram_Neg_Intracellular|lower != "n/a" and isolate.Gram_Neg_Intracellular|lower != "none" %} {{isolate.Gram_Neg_Intracellular}} {%endif%}
+        </td></tr>
+        <tr><td colspan="4"><strong>Gram Negative Extracellular Diplococci:</strong></td><td colspan="4" style="text-decoration: underline;">
+        {%if isolate.Gram_Neg_Extracellular and isolate.Gram_Neg_Extracellular|lower != "n/a" and isolate.Gram_Neg_Extracellular|lower != "none" %}{{isolate.Gram_Neg_Extracellular}}{%endif%}
+        </td></tr>
         {% if isolate.GS_Other_sp or isolate.GS_Other_sp2 or isolate.GS_Other_sp3 %}
         <tr><td colspan="4"><strong>Others:</strong></td></tr>   
-        {% if isolate.GS_Other_sp and isolate.GS_Other_sp != "" %}<tr><td colspan="4" >&nbsp;&nbsp;<strong><u>{{isolate.GS_Others}}</u></strong></td><td colspan="4" style="text-decoration: underline;">{{isolate.GS_Other_sp}}</td></tr> {% endif %}
-        {% if isolate.GS_Other_sp2 and isolate.GS_Other_sp2 != "" %}<tr><td colspan="4" >&nbsp;&nbsp;<strong><u>{{isolate.GS_Others2}}</u></strong></td><td colspan="4" style="text-decoration: underline;">{{isolate.GS_Other_sp2}}</td></tr>{% endif %}
-        {% if isolate.GS_Other_sp3 and isolate.GS_Other_sp3 != "" %}<tr><td colspan="4" >&nbsp;&nbsp;<strong><u>{{isolate.GS_Others3}}</u></strong></td><td colspan="4" style="text-decoration: underline;">{{isolate.GS_Other_sp3}}</td></tr>{% endif %}
+        {% if isolate.GS_Other_sp and isolate.GS_Other_sp != "" and isolate.GS_Other_sp|lower != "n/a" and isolate.GS_Other_sp|lower != "none" %}<tr><td colspan="4" >&nbsp;&nbsp;{% if isolate.GS_Others and isolate.GS_Others|lower != "n/a" and isolate.GS_Others|lower != "none" %}<strong><u>{{isolate.GS_Others|default:""}}</u></strong>{%endif%}</td><td colspan="4" style="text-decoration: underline;">{{isolate.GS_Other_sp}}</td></tr> {% endif %}
+        {% if isolate.GS_Other_sp2 and isolate.GS_Other_sp2 != "" and isolate.GS_Other_sp2|lower != "n/a" and isolate.GS_Other_sp2|lower != "none" %}<tr><td colspan="4" >&nbsp;&nbsp;<strong><u>{% if isolate.GS_Others2 and isolate.GS_Others2|lower != "n/a" and isolate.GS_Others2|lower != "none" %}{{isolate.GS_Others2|default:""}}</u></strong>{%endif%}</td><td colspan="4" style="text-decoration: underline;">{{isolate.GS_Other_sp2}}</td></tr>{% endif %}
+        {% if isolate.GS_Other_sp3 and isolate.GS_Other_sp3 != "" and isolate.GS_Other_sp3|lower != "n/a" and isolate.GS_Other_sp3|lower != "none" %}<tr><td colspan="4" >&nbsp;&nbsp;<strong><u>{% if isolate.GS_Others3 and isolate.GS_Others3|lower != "n/a" and isoalte.GS_Others3|lower != "none" %}{{isolate.GS_Others3|default:""}}</u></strong></td>{%endif%}<td colspan="4" style="text-decoration: underline;">{{isolate.GS_Other_sp3}}</td></tr>{% endif %}
         {% endif %}
     </table>
 
@@ -155,8 +169,8 @@
                         <td style="text-align: center;border: 1px solid gray;">{{ entry.ab_Disk_RIS }}</td>
                         {% else %}
                         <td style="text-align: center;border: 1px solid gray;">MIC (ug/mL)</td>
-                        <td style="text-align: center;border: 1px solid gray;">{{ entry.ab_MIC_operand }}{{ entry.ab_MIC_value }}</td>
-                        <td style="text-align: center;border: 1px solid gray;">{{ entry.ab_MIC_RIS }}</td>
+                        <td style="text-align: center;border: 1px solid gray;">{%if entry.ab_MIC_operand%}{{ entry.ab_MIC_operand }}{%endif%}{{ entry.ab_MIC_value|floatformat:"-3" }}</td>
+                        <td style="text-align: center;border: 1px solid gray;">{{ entry.ab_MIC_RIS |default:"-"}}</td>
                         {% endif %}
                       
                     </tr>
@@ -194,11 +208,9 @@
 
 
     <br>
-    <br>
 
     
-   
-    
+
 
 <!-- Signatures -->
     <table table style="border: 0.5pt solid gray; border-collapse: collapse; width: 100%;">
@@ -208,7 +220,6 @@
             <th colspan="2">Validated by:</th>
             <th colspan="2">Noted by:</th>
         </thead>
-        <br>
         <br>
         <tbody>
         <tr>

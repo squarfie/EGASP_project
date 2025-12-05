@@ -445,23 +445,23 @@
                     <td colspan="4" style="border-right: 1px solid gray;"><strong>Others:</strong></td>
                     <td colspan="4"></td>
                 </tr>
-                {% if isolate.GS_Other_sp|default:''%}
+                {% if isolate.GS_Other_sp|default:"" %}
                 <tr>
                     <td colspan="2" style="text-align: right;">{{isolate.GS_Others}}:</td>
                     <td colspan="2" style="border-right: 1px solid gray;">&nbsp;{{isolate.GS_Other_sp}}</td>
                     <td colspan="4"></td>
                 </tr>
                 {% endif %}
-                {% if isolate.GS_Other_sp2|default:''%}
+                {% if isolate.GS_Other_sp2|default:"" %}
                  <tr>
                     <td colspan="2" style="text-align: right;">{{isolate.GS_Others2}}:</td>
                     <td colspan="2" style="border-right: 1px solid gray;">&nbsp;{{isolate.GS_Other_sp2}}</td>
                     <td colspan="4"></td>
                 </tr>
                 {% endif %}
-                {% if isolate.GS_Other_sp3|default:''%}
+                {% if isolate.GS_Other_sp3|default:"" %}
                  <tr>
-                    <td colspan="2" style="text-align: right;">{{isolate.GS_Others3}}:</td>
+                    <td colspan="2" style="text-align: right;">{{isolate.GS_Others3}}: </td>
                     <td colspan="2" style="border-right: 1px solid gray;">&nbsp;{{isolate.GS_Other_sp3}}</td>
                     <td colspan="4"></td>
                 </tr>
@@ -511,7 +511,7 @@
                             {% if entry.ab_Disk_value  %}
                              <strong>{{ entry.ab_Abx }}:</strong> DISK: {{ entry.ab_Disk_value }} {{ entry.ab_Disk_RIS }} 
                             {% elif entry.ab_MIC_value %}
-                             <strong>{{ entry.ab_Abx }}:</strong> MIC: {{ entry.ab_MIC_operand }} {{ entry.ab_MIC_value }} {{ entry.ab_MIC_RIS }}
+                             <strong>{{ entry.ab_Abx }}:</strong> MIC: {{ entry.ab_MIC_operand|default:" " }} {{ entry.ab_MIC_value|floatformat:"-3" }} {{ entry.ab_MIC_RIS|default:"" }}
                             {% else %}
                                 &nbsp;
                             {% endif %}
@@ -529,7 +529,7 @@
                         <!-- RETEST AST -->
                         <td colspan="2" style="text-align: center;">
                             {% if entry.ab_Retest_MICValue %}
-                                <strong>{{ entry.ab_Retest_Abx }}:</strong> MIC: {{ entry.ab_Retest_MIC_operand }} {{ entry.ab_Retest_MICValue }} {{ entry.ab_Retest_MIC_RIS }}
+                                <strong>{{ entry.ab_Retest_Abx }}:</strong> MIC: {{ entry.ab_Retest_MIC_operand | default:""}} {{ entry.ab_Retest_MICValue|floatformat:"-3" }} {{ entry.ab_Retest_MIC_RIS|default:"" }}
                             {% else %}
                                 &nbsp;
                             {% endif %}
@@ -567,15 +567,15 @@
                 </tr>
                 <tr>
                     <td colspan="2"><strong>12.1 Laboratory Personel:</strong></td>
-                    <td colspan="2">{{isolate.Validator_Pers}}</td>
+                    <td colspan="2">{%if isolate.Validator_Pers and isolate.Validator_Pers|lower != "n/a" and isolate.Validator_Pers|lower != "none" %}{{isolate.Validator_Pers}}{%endif%}</td>
                     <td colspan="2"><strong>12.2 Email Address:</strong></td>
-                    <td colspan="2">{{isolate.val_email}}</td>
+                    <td colspan="2">{%if isolate.val_email and isolate.val_email|lower != "n/a" and isolate.val_email|lower != "none" %}{{isolate.val_email}}{%endif%}</td>
                 </tr>
                 <tr>
                     <td colspan="2"><strong>12.3 Contact No.:</strong></td>
-                    <td colspan="2">{{isolate.val_contact}}</td>
+                    <td colspan="2">{%if isolate.val_contact and isolate.val_contact|lower != "n/a" and isolate.val_contact|lower != "none" %}{{isolate.val_contact}}{%endif%}</td>
                     <td colspan="2"><strong>12.4 Date Accomplished:</strong></td>
-                    <td colspan="2">{{isolate.Date_Validated_ARSP}}</td>
+                    <td colspan="2">{%if isolate.Date_Validated_ARSP and isolate.Date_Validated|lower != "n/a" and isolate.Date_Validated_ARSP|lower != "none"%}{{isolate.Date_Validated_ARSP}}{%endif%}</td>
                 </tr>
                 <tr>
                     <td><strong>Notes:</strong></td>
